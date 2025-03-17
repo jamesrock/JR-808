@@ -12,24 +12,16 @@ const wave = new PeriodicWave(audioCtx, {
 });
 
 let attackTime = 0.2;
-const attackControl = document.querySelector("#attack");
-attackControl.addEventListener(
-  "input",
-  (ev) => {
-    attackTime = parseFloat(ev.target.value);
-  },
-  false
-);
+const attackControl = document.querySelector('#attack');
+attackControl.addEventListener("input", (ev) => {
+  attackTime = parseFloat(ev.target.value);
+}, false);
 
 let releaseTime = 0.5;
-const releaseControl = document.querySelector("#release");
-releaseControl.addEventListener(
-  "input",
-  (ev) => {
-    releaseTime = parseFloat(ev.target.value);
-  },
-  false
-);
+const releaseControl = document.querySelector('#release');
+releaseControl.addEventListener("input", (ev) => {
+  releaseTime = parseFloat(ev.target.value);
+}, false);
 
 // Expose attack time & release time
 const sweepLength = 2;
@@ -52,11 +44,11 @@ function playSweep(time) {
   osc.connect(sweepEnv).connect(audioCtx.destination);
   osc.start(time);
   osc.stop(time + sweepLength);
-}
+};
 
 // Expose frequency & frequency modulation
 let pulseHz = 880;
-const hzControl = document.querySelector("#hz");
+const hzControl = document.querySelector('#hz');
 hzControl.addEventListener(
   "input",
   (ev) => {
@@ -66,7 +58,7 @@ hzControl.addEventListener(
 );
 
 let lfoHz = 30;
-const lfoControl = document.querySelector("#lfo");
+const lfoControl = document.querySelector('#lfo');
 lfoControl.addEventListener(
   "input",
   (ev) => {
@@ -98,9 +90,8 @@ function playPulse(time) {
   osc.stop(time + pulseTime);
 }
 
-// Expose noteDuration & band frequency
 let noiseDuration = 1;
-const durControl = document.querySelector("#duration");
+const durControl = document.querySelector('#duration');
 durControl.addEventListener(
   "input",
   (ev) => {
@@ -110,14 +101,10 @@ durControl.addEventListener(
 );
 
 let bandHz = 1000;
-const bandControl = document.querySelector("#band");
-bandControl.addEventListener(
-  "input",
-  (ev) => {
-    bandHz = parseFloat(ev.target.value);
-  },
-  false
-);
+const bandControl = document.querySelector('#band');
+bandControl.addEventListener('input', (ev) => {
+  bandHz = parseFloat(ev.target.value);
+}, false);
 
 function playNoise(time) {
   const bufferSize = audioCtx.sampleRate * noiseDuration; // set the time of the note
@@ -132,7 +119,7 @@ function playNoise(time) {
   const data = noiseBuffer.getChannelData(0);
   for (let i = 0; i < bufferSize; i++) {
     data[i] = Math.random() * 2 - 1;
-  }
+  };
 
   // Create a buffer source for our created data
   const noise = new AudioBufferSourceNode(audioCtx, {
@@ -148,7 +135,7 @@ function playNoise(time) {
   // Connect our graph
   noise.connect(bandpass).connect(audioCtx.destination);
   noise.start(time);
-}
+};
 
 // Loading the file: fetch the audio file and decode the data
 async function getFile(audioContext, filepath) {
@@ -156,17 +143,13 @@ async function getFile(audioContext, filepath) {
   const arrayBuffer = await response.arrayBuffer();
   const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
   return audioBuffer;
-}
+};
 
 let playbackRate = 1;
 const rateControl = document.querySelector("#rate");
-rateControl.addEventListener(
-  "input",
-  (ev) => {
-    playbackRate = parseFloat(ev.target.value);
-  },
-  false
-);
+rateControl.addEventListener("input", (ev) => {
+  playbackRate = parseFloat(ev.target.value);
+}, false);
 
 // Create a buffer, plop in data, connect and play -> modify graph here if required
 function playSample(audioContext, audioBuffer, time) {
@@ -177,29 +160,23 @@ function playSample(audioContext, audioBuffer, time) {
   sampleSource.connect(audioContext.destination);
   sampleSource.start(time);
   return sampleSource;
-}
+};
 
 async function setupSample() {
   const filePath = "dtmf.mp3";
-  // Here we're waiting for the load of the file
-  // To be able to use this keyword we need to be within an `async` function
   const sample = await getFile(audioCtx, filePath);
   return sample;
-}
+};
 
 // Scheduling
 let tempo = 60.0;
 const bpmControl = document.querySelector("#bpm");
 const bpmValEl = document.querySelector("#bpmval");
 
-bpmControl.addEventListener(
-  "input",
-  (ev) => {
-    tempo = parseFloat(ev.target.value);
-    bpmValEl.innerText = tempo;
-  },
-  false
-);
+bpmControl.addEventListener("input", (ev) => {
+  tempo = parseFloat(ev.target.value);
+  bpmValEl.innerText = tempo;
+}, false);
 
 const lookahead = 25.0; // How frequently to call scheduling function (in milliseconds)
 const scheduleAheadTime = 0.1; // How far ahead to schedule audio (sec)
@@ -213,7 +190,7 @@ function nextNote() {
 
   // Advance the beat number, wrap to zero when reaching 4
   currentNote = (currentNote + 1) % 4;
-}
+};
 
 // Create a queue for the notes that are to be played, with the current time that we want them to play:
 const notesInQueue = [];
@@ -235,7 +212,7 @@ function scheduleNote(beatNumber, time) {
   if (pads[3].querySelectorAll("input")[beatNumber].checked) {
     playSample(audioCtx, dtmf, time);
   }
-}
+};
 
 let timerID;
 function scheduler() {
@@ -246,7 +223,7 @@ function scheduler() {
     nextNote();
   }
   timerID = setTimeout(scheduler, lookahead);
-}
+};
 
 // Draw function to update the UI, so we can see when the beat progress.
 // This is a loop: it reschedules itself to redraw at the end.
@@ -308,6 +285,7 @@ setupSample().then((sample) => {
 
 
 
+// original 808 objects
 
 class Sequencer {
   constructor() {
