@@ -1,0 +1,19 @@
+{
+  "name": "step-sequencer",
+  "version": "1.0.0",
+  "description": "make music!",
+  "main": "app.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "author": "James Rock",
+  "license": "ISC",
+  "dependencies": {
+    "tone": "^15.0.4"
+  },
+  "devDependencies": {
+    "vite": "^6.2.2"
+  }
+}
