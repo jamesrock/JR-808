@@ -1,4 +1,4 @@
-export const wavetableSource = {
+const wavetableSource = {
   real: [
     0.0, -0.000001, -0.085114, 0.113655, -0.053293, 0.034018, -0.024299,
     0.01707, -0.015971, 0.01553, -0.012639, 0.011335, -0.011541, 0.01043,
@@ -589,7 +589,7 @@ export const wavetableSource = {
   ],
 };
 
-const wavetable = {
+export const wavetable = {
   real: Float32Array.from(wavetableSource.real),
   imag: Float32Array.from(wavetableSource.imag),
 };

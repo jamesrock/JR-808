@@ -1,5 +1,5 @@
-import * as Tone from 'tone';
-import { wavetableSource } from './wavetable';
+// import * as Tone from 'tone';
+import { wavetable } from './wavetable.js';
 
 const audioCtx = new AudioContext();
 
