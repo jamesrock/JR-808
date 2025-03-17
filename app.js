@@ -304,3 +304,183 @@ setupSample().then((sample) => {
     }
   });
 });
+
+
+
+
+
+class Sequencer {
+  constructor() {
+    
+    this.steps = this.getSteps();
+    this.channels = [
+      new Channel([ACcent], [new LevelKnob()]),
+      new Channel([BassDrum], [new LevelKnob(), new ToneKnob(), new DecayKnob()]),
+      new Channel([SnareDrum], [new LevelKnob(), new ToneKnob(), new SnappyKnob()]),
+      new Channel([LowConga, LowTom], [new LevelKnob(), new TuningKnob()]),
+      new Channel([MidConga, MidTom], [new LevelKnob(), new TuningKnob()]),
+      new Channel([HiConga, HiTom], [new LevelKnob(), new TuningKnob()]),
+      new Channel([CLave, RimShot], [new LevelKnob()]),
+      new Channel([MAracas, handClaP], [new LevelKnob()]),
+      new Channel([CowBell], [new LevelKnob()]),
+      new Channel([CYmbal], [new LevelKnob(), new ToneKnob(), new DecayKnob()]),
+      new Channel([OpenHats], [new LevelKnob(), new DecayKnob()]),
+      new Channel([ClosedHats], [new LevelKnob()])
+    ];
+
+    // this.start();
+
+  };
+  getSteps() {
+    const out = [];
+    let colorIndex = -1;
+    for(var step=0;step<this.stepCount;step++) {
+      if(step % 4 === 0) {
+        colorIndex += 1;
+      };
+      out.push(new Step(this.stepColors[colorIndex]));
+    };
+    return out;
+  };
+  start() {
+
+    const setText = useSetAtom(countAtom);
+
+    console.log('start');
+
+    setText(this.currentStep);
+
+    this.steps.forEach((step) => {
+      step.unflash();
+    });
+
+    this.steps[this.currentStep].flash();
+
+    if(this.currentStep===(this.steps.length - 1)) {
+      this.currentStep = 0;
+    }
+    else {
+      this.currentStep += 1;
+    };
+    
+    setTimeout(() => {
+
+      this.start();
+      
+    }, 1000);
+
+    return this;
+
+  };
+  stop() {};
+  playing = false;
+  stepCount = 16;
+  stepLength = 16;
+  currentStep = 0;
+  tempo = 120;
+  
+  stepColors = ['red', 'orange', 'yellow', 'white'];
+};
+
+class Knob {
+  constructor() {
+  };
+  label = 'Knob';
+};
+
+class LevelKnob extends Knob {
+  constructor() {
+    super();
+  };
+  label = 'Level';
+};
+
+class TuningKnob extends Knob {
+  constructor() {
+    super();
+  };
+  label = 'Tuning';
+};
+
+class ToneKnob extends Knob {
+  constructor() {
+    super();
+  };
+  label = 'Tone';
+};
+
+class DecayKnob extends Knob {
+  constructor() {
+    super();
+  };
+  label = 'Decay';
+};
+
+class SnappyKnob extends Knob {
+  constructor() {
+    super();
+  };
+  label = 'Snappy';
+};
+
+class Switch {
+  constructor() {};
+};
+
+class Variation {
+  constructor() {};
+};
+
+class Instrument {
+  constructor(name) {
+    this.name = name;
+  };
+  play() {};
+};
+
+class Step {
+  constructor(color) {
+    this.color = color;
+  };
+  flash() {
+    this.active = true;
+  };
+  unflash() {
+    this.active = false;
+  };
+  active = false;
+  color = 'red';
+};
+
+class Channel {
+  constructor(instruments, modifiers) {
+    this.instruments = instruments;
+    this.modifiers = modifiers;
+  };
+};
+
+const ACcent = new Instrument('ACcent');
+const BassDrum = new Instrument('BassDrum');
+const SnareDrum = new Instrument('SnareDrum');
+const LowConga = new Instrument('LowConga');
+const LowTom = new Instrument('LowTom');
+const MidConga = new Instrument('MidConga');
+const MidTom = new Instrument('MidTom');
+const HiConga = new Instrument('HiConga');
+const HiTom = new Instrument('HiTom');
+const CLave = new Instrument('CLave');
+const RimShot = new Instrument('RimShot');
+const MAracas = new Instrument('MAracas');
+const handClaP = new Instrument('handClaP');
+const CowBell = new Instrument('CowBell');
+const CYmbal = new Instrument('CYmbal');
+const OpenHats = new Instrument('OpenHats');
+const ClosedHats = new Instrument('ClosedHats');
+
+export const sequencer = new Sequencer();
+
+// console.log(sequencer);
+
+
+
+
