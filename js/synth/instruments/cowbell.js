@@ -14,7 +14,7 @@ const SHORT_DECAY = 15;
 const LONG_DECAY = 400;
 const LONG_AMT = 0.25;
 
-export default function(audioCtx, destination, time, { level }) {
+export const cowbell = (audioCtx, destination, time, { level }) => {
   // parameters
   const outputLevel = equalPower(level);
 
@@ -83,4 +83,4 @@ export default function(audioCtx, destination, time, { level }) {
   }, time - audioCtx.currentTime + 1000);
 
   return outputVCA;
-}
+};

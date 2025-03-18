@@ -10,7 +10,7 @@ const HIGH_FILTER_FREQ = 8000;
 const HIGH_DECAY = 150;
 const MID_DECAY = 400;
 
-export default function(audioCtx, destination, time, { level, tone, decay }) {
+export const cymbal = (audioCtx, destination, time, { level, tone, decay }) => {
   // parameters
   const outputLevel = equalPower(level);
   const lowDecay = decay * 8.5 + 700;
@@ -90,4 +90,4 @@ export default function(audioCtx, destination, time, { level, tone, decay }) {
   }, time - audioCtx.currentTime + 2000);
 
   return outputVCA;
-}
+};

@@ -10,7 +10,7 @@ const RIM_CLAVE_FREQ = 1750;
 const CLAVE_FREQ = 2450;
 const RIM_FREQ = 480;
 
-export default function(audioCtx, destination, time, { level, selector }) {
+export const claveRimshot = (audioCtx, destination, time, { level, selector }) => {
   // parameters
   const outputLevel = equalPower(level);
 
@@ -83,4 +83,4 @@ export default function(audioCtx, destination, time, { level, selector }) {
   }, time - audioCtx.currentTime + 1000);
 
   return outputVCA;
-}
+};

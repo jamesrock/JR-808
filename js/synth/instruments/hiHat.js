@@ -6,7 +6,7 @@ import ADGenerator, { LINEAR } from "synth/basics/ADGenerator";
 const MID_FILTER_FREQ = 10000;
 const HIGH_FILTER_FREQ = 8000;
 
-export default function(audioCtx, destination, time, outputLevel, decay) {
+export const hiHat = (audioCtx, destination, time, outputLevel, decay) => {
   // audio modules
   const oscBank = new SquareOscBank(audioCtx);
 
@@ -47,4 +47,4 @@ export default function(audioCtx, destination, time, outputLevel, decay) {
   }, time - audioCtx.currentTime + 1000);
 
   return outputVCA;
-}
+};

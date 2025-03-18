@@ -7,7 +7,7 @@ import { equalPower } from "helpers";
 const highOscFreq = 476;
 const lowOscFreq = 238;
 
-export default function(audioCtx, destination, time, { level, tone, snappy }) {
+export const snareDrum = (audioCtx, destination, time, { level, tone, snappy }) => {
   // parameters
   const outputLevel = equalPower(level);
   const noiseVCFFreq = tone * 100 + 800;
@@ -66,4 +66,4 @@ export default function(audioCtx, destination, time, { level, tone, snappy }) {
   }, time - audioCtx.currentTime + 1000);
 
   return outputVCA;
-}
+};

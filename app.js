@@ -3,8 +3,44 @@ import { wavetable } from './wavetable.js';
 
 const audioCtx = new AudioContext();
 
-// Before we do anything more, let's grab our checkboxes from the interface. We want to keep them in the groups they are in as each row represents a different sound or _voice_.
-const pads = document.querySelectorAll(".pads");
+// grab our checkboxes from the interface - we want to keep them in the groups they are in as each row represents a different sound or _voice_.
+const pads = document.querySelectorAll('.step');
+
+pads.forEach((item) => {
+  item.addEventListener('input', (e) => {
+    instruments[instrument][parseFloat(e.target.value)] = e.target.checked ? 1 : 0;
+  });
+});
+
+const instruments = [
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+];
+let instrument = 1;
+
+const resetPads = () => {
+  console.log('instrument', instrument, instruments[instrument]);
+  instruments[instrument].forEach((step, stepIndex) => {
+    document.querySelector(`.step[value="${stepIndex}"]`).checked = (step === 1 ? true : false);
+  });
+};
+
+const instrumentControl = document.querySelector('#instrument');
+instrumentControl.value = instrument;
+instrumentControl.addEventListener('change', (ev) => {
+  instrument = parseFloat(ev.target.value);
+  resetPads();
+}, false);
 
 const wave = new PeriodicWave(audioCtx, {
   real: wavetable.real,
@@ -13,15 +49,15 @@ const wave = new PeriodicWave(audioCtx, {
 
 let attackTime = 0.2;
 const attackControl = document.querySelector('#attack');
-attackControl.addEventListener("input", (ev) => {
-  attackTime = parseFloat(ev.target.value);
+attackControl.addEventListener('input', (ev) => {
+  attackTime = ev.target.valueAsNumber;
 }, false);
 
 let releaseTime = 0.5;
-const releaseControl = document.querySelector('#release');
-releaseControl.addEventListener("input", (ev) => {
-  releaseTime = parseFloat(ev.target.value);
-}, false);
+// const releaseControl = document.querySelector('#release');
+// releaseControl.addEventListener('input', (ev) => {
+//   releaseTime = parseFloat(ev.target.value);
+// }, false);
 
 // Expose attack time & release time
 const sweepLength = 2;
@@ -48,24 +84,16 @@ function playSweep(time) {
 
 // Expose frequency & frequency modulation
 let pulseHz = 880;
-const hzControl = document.querySelector('#hz');
-hzControl.addEventListener(
-  "input",
-  (ev) => {
-    pulseHz = parseFloat(ev.target.value);
-  },
-  false
-);
+// const hzControl = document.querySelector('#hz');
+// hzControl.addEventListener('input', (ev) => {
+//   pulseHz = parseFloat(ev.target.value);
+// }, false);
 
 let lfoHz = 30;
-const lfoControl = document.querySelector('#lfo');
-lfoControl.addEventListener(
-  "input",
-  (ev) => {
-    lfoHz = parseFloat(ev.target.value);
-  },
-  false
-);
+// const lfoControl = document.querySelector('#lfo');
+// lfoControl.addEventListener('input', (ev) => {
+//   lfoHz = parseFloat(ev.target.value);
+// }, false);
 
 const pulseTime = 1;
 function playPulse(time) {
@@ -88,23 +116,19 @@ function playPulse(time) {
   lfo.start();
   osc.start(time);
   osc.stop(time + pulseTime);
-}
+};
 
 let noiseDuration = 1;
-const durControl = document.querySelector('#duration');
-durControl.addEventListener(
-  "input",
-  (ev) => {
-    noiseDuration = parseFloat(ev.target.value);
-  },
-  false
-);
+// const durControl = document.querySelector('#duration');
+// durControl.addEventListener('input', (ev) => {
+//   noiseDuration = ev.target.valueAsNumber;
+// }, false);
 
 let bandHz = 1000;
-const bandControl = document.querySelector('#band');
-bandControl.addEventListener('input', (ev) => {
-  bandHz = parseFloat(ev.target.value);
-}, false);
+// const bandControl = document.querySelector('#band');
+// bandControl.addEventListener('input', (ev) => {
+//   bandHz = ev.target.valueAsNumber;
+// }, false);
 
 function playNoise(time) {
   const bufferSize = audioCtx.sampleRate * noiseDuration; // set the time of the note
@@ -137,44 +161,21 @@ function playNoise(time) {
   noise.start(time);
 };
 
-// Loading the file: fetch the audio file and decode the data
-async function getFile(audioContext, filepath) {
-  const response = await fetch(filepath);
-  const arrayBuffer = await response.arrayBuffer();
-  const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
-  return audioBuffer;
-};
-
 let playbackRate = 1;
-const rateControl = document.querySelector("#rate");
-rateControl.addEventListener("input", (ev) => {
-  playbackRate = parseFloat(ev.target.value);
-}, false);
-
-// Create a buffer, plop in data, connect and play -> modify graph here if required
-function playSample(audioContext, audioBuffer, time) {
-  const sampleSource = new AudioBufferSourceNode(audioContext, {
-    buffer: audioBuffer,
-    playbackRate: playbackRate,
-  });
-  sampleSource.connect(audioContext.destination);
-  sampleSource.start(time);
-  return sampleSource;
-};
-
-async function setupSample() {
-  const filePath = "dtmf.mp3";
-  const sample = await getFile(audioCtx, filePath);
-  return sample;
-};
+// const rateControl = document.querySelector("#rate");
+// rateControl.addEventListener('input', (ev) => {
+//   playbackRate = ev.target.valueAsNumber;
+// }, false);
 
 // Scheduling
-let tempo = 60.0;
-const bpmControl = document.querySelector("#bpm");
-const bpmValEl = document.querySelector("#bpmval");
+let tempo = 60;
+const bpmControl = document.querySelector('#bpm');
+const bpmValEl = document.querySelector('#bpmval');
 
-bpmControl.addEventListener("input", (ev) => {
-  tempo = parseFloat(ev.target.value);
+const steps = 16;
+
+bpmControl.addEventListener('input', (ev) => {
+  tempo = ev.target.valueAsNumber;
   bpmValEl.innerText = tempo;
 }, false);
 
@@ -188,30 +189,19 @@ function nextNote() {
 
   nextNoteTime += secondsPerBeat; // Add beat length to last beat time
 
-  // Advance the beat number, wrap to zero when reaching 4
-  currentNote = (currentNote + 1) % 4;
+  // Advance the beat number, wrap to zero when reaching {steps}
+  currentNote = (currentNote + 1) % steps;
 };
 
 // Create a queue for the notes that are to be played, with the current time that we want them to play:
 const notesInQueue = [];
-let dtmf;
 
 function scheduleNote(beatNumber, time) {
   // Push the note into the queue, even if we're not playing.
   notesInQueue.push({ note: beatNumber, time: time });
-
-  if (pads[0].querySelectorAll("input")[beatNumber].checked) {
+  if(instrument[beatNumber]) {
     playSweep(time);
-  }
-  if (pads[1].querySelectorAll("input")[beatNumber].checked) {
-    playPulse(time);
-  }
-  if (pads[2].querySelectorAll("input")[beatNumber].checked) {
-    playNoise(time);
-  }
-  if (pads[3].querySelectorAll("input")[beatNumber].checked) {
-    playSample(audioCtx, dtmf, time);
-  }
+  };
 };
 
 let timerID;
@@ -239,47 +229,43 @@ function draw() {
 
   // We only need to draw if the note has moved.
   if (lastNoteDrawn !== drawNote) {
-    pads.forEach((pad) => {
-      pad.children[lastNoteDrawn * 2].style.borderColor = "var(--black)";
-      pad.children[drawNote * 2].style.borderColor = "var(--yellow)";
-    });
+    // pads.forEach((pad) => {
+    //   pad.children[lastNoteDrawn * 2].style.borderColor = "var(--black)";
+    //   pad.children[drawNote * 2].style.borderColor = "var(--yellow)";
+    // });
 
     lastNoteDrawn = drawNote;
   }
   // Set up to draw again
   requestAnimationFrame(draw);
-}
+};
 
 // When the sample has loaded, allow play
 const loadingEl = document.querySelector(".loading");
 const playButton = document.querySelector("#playBtn");
 let isPlaying = false;
-setupSample().then((sample) => {
-  loadingEl.style.display = "none";
+loadingEl.style.display = 'none';
 
-  dtmf = sample; // to be used in our playSample function
+playButton.addEventListener('click', (ev) => {
+  isPlaying = !isPlaying;
 
-  playButton.addEventListener("click", (ev) => {
-    isPlaying = !isPlaying;
+  if (isPlaying) {
+    // Start playing
 
-    if (isPlaying) {
-      // Start playing
-
-      // Check if context is in suspended state (autoplay policy)
-      if (audioCtx.state === "suspended") {
-        audioCtx.resume();
-      }
-
-      currentNote = 0;
-      nextNoteTime = audioCtx.currentTime;
-      scheduler(); // kick off scheduling
-      requestAnimationFrame(draw); // start the drawing loop.
-      ev.target.dataset.playing = "true";
-    } else {
-      window.clearTimeout(timerID);
-      ev.target.dataset.playing = "false";
+    // Check if context is in suspended state (autoplay policy)
+    if (audioCtx.state === "suspended") {
+      audioCtx.resume();
     }
-  });
+
+    currentNote = 0;
+    nextNoteTime = audioCtx.currentTime;
+    scheduler(); // kick off scheduling
+    requestAnimationFrame(draw); // start the drawing loop.
+    ev.target.dataset.playing = "true";
+  } else {
+    window.clearTimeout(timerID);
+    ev.target.dataset.playing = "false";
+  }
 });
 
 

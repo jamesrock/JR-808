@@ -6,7 +6,7 @@ import SawEnvGenerator from "synth/basics/sawEnvGenerator";
 import { equalPower } from "helpers";
 
 // selector: 0 = maracas, 1 = handclap
-export default function(audioCtx, destination, time, { level, selector }) {
+export const maracasHandclap = (audioCtx, destination, time, { level, selector }) => {
   // parameters
   const outputLevel = equalPower(level);
 
@@ -73,4 +73,4 @@ export default function(audioCtx, destination, time, { level, selector }) {
   }, time - audioCtx.currentTime + 1000);
 
   return outputVCA;
-}
+};

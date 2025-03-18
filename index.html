@@ -13,8 +13,9 @@
     </div>
 
     <div id="sequencer">
+      
       <section class="controls-main">
-        <h1>ModemDN</h1>
+        <h1>JR-808</h1>
         <label for="bpm">BPM</label>
         <input
           name="bpm"
@@ -28,6 +29,21 @@
         <input type="checkbox" id="playBtn" />
         <label for="playBtn">Play</label>
       </section>
+
+      <select id="instrument">
+        <option value="0">AC</option>
+        <option value="1">BD</option>
+        <option value="2">SD</option>
+        <option value="3">LT</option>
+        <option value="4">MT</option>
+        <option value="5">HT</option>
+        <option value="6">RS</option>
+        <option value="7">CP</option>
+        <option value="8">CB</option>
+        <option value="9">CY</option>
+        <option value="10">OH</option>
+        <option value="11">CH</option>
+      </select>
 
       <div id="tracks">
         <!-- track one: bleep -->
@@ -55,131 +71,57 @@
           </section>
 
           <section class="pads">
-            <input type="checkbox" id="v1n1" />
+            <input type="checkbox" id="v1n1" value="0" class="step" />
             <label for="v1n1">Voice 1, Note 1</label>
 
-            <input type="checkbox" id="v1n2" />
+            <input type="checkbox" id="v1n2" value="1" class="step" />
             <label for="v1n2">Voice 1, Note 2</label>
 
-            <input type="checkbox" id="v1n3" />
+            <input type="checkbox" id="v1n3" value="2" class="step" />
             <label for="v1n3">Voice 1, Note 3</label>
 
-            <input type="checkbox" id="v1n4" />
+            <input type="checkbox" id="v1n4" value="3" class="step" />
             <label for="v1n4">Voice 1, Note 4</label>
+
+            <input type="checkbox" id="v1n5" value="4" class="step" />
+            <label for="v1n5">Voice 1, Note 5</label>
+            
+            <input type="checkbox" id="v1n6" value="5" class="step" />
+            <label for="v1n6">Voice 1, Note 6</label>
+            
+            <input type="checkbox" id="v1n7" value="6" class="step" />
+            <label for="v1n7">Voice 1, Note 7</label>
+            
+            <input type="checkbox" id="v1n8" value="7" class="step" />
+            <label for="v1n8">Voice 1, Note 8</label>
+
+            <input type="checkbox" id="v1n9" value="8" class="step" />
+            <label for="v1n9">Voice 1, Note 9</label>
+            
+            <input type="checkbox" id="v1n10" value="9" class="step" />
+            <label for="v1n10">Voice 1, Note 10</label>
+            
+            <input type="checkbox" id="v1n11" value="10" class="step" />
+            <label for="v1n11">Voice 1, Note 11</label>
+            
+            <input type="checkbox" id="v1n12" value="11" class="step" />
+            <label for="v1n12">Voice 1, Note 12</label>
+
+            <input type="checkbox" id="v1n13" value="12" class="step" />
+            <label for="v1n13">Voice 1, Note 13</label>
+            
+            <input type="checkbox" id="v1n14" value="13" class="step" />
+            <label for="v1n14">Voice 1, Note 14</label>
+            
+            <input type="checkbox" id="v1n15" value="14" class="step" />
+            <label for="v1n15">Voice 1, Note 15</label>
+            
+            <input type="checkbox" id="v1n16" value="15" class="step" />
+            <label for="v1n16">Voice 1, Note 16</label>
+
           </section>
         </section>
-
-        <!-- track two: pad/sweep -->
-        <section class="track-two">
-          <h2>Pulse</h2>
-          <section class="controls">
-            <label for="hz">Hz</label>
-            <input
-              name="hz"
-              id="hz"
-              type="range"
-              min="660"
-              max="1320"
-              value="880"
-              step="1" />
-            <label for="lfo">LFO</label>
-            <input
-              name="lfo"
-              id="lfo"
-              type="range"
-              min="20"
-              max="40"
-              value="30"
-              step="1" />
-          </section>
-          <!--
-
-          -->
-          <section class="pads">
-            <input type="checkbox" id="v2n1" />
-            <label for="v2n1">Voice 2, Note 1</label>
-
-            <input type="checkbox" id="v2n2" />
-            <label for="v2n2">Voice 2, Note 2</label>
-
-            <input type="checkbox" id="v2n3" />
-            <label for="v2n3">Voice 2, Note 3</label>
-
-            <input type="checkbox" id="v2n4" />
-            <label for="v2n4">Voice 2, Note 4</label>
-          </section>
-        </section>
-
-        <!-- track three: noise -->
-        <section class="track-three">
-          <h2>Noise</h2>
-          <section class="controls">
-            <label for="duration">Dur</label>
-            <input
-              name="duration"
-              id="duration"
-              type="range"
-              min="0.25"
-              max="1"
-              value="1"
-              step="0.25" />
-            <label for="band">Band</label>
-            <input
-              name="band"
-              id="band"
-              type="range"
-              min="400"
-              max="1200"
-              value="1000"
-              step="5" />
-          </section>
-
-          <section class="pads">
-            <input type="checkbox" id="v3n1" />
-            <label for="v3n1">Voice 3, Note 1</label>
-
-            <input type="checkbox" id="v3n2" />
-            <label for="v3n2">Voice 3, Note 2</label>
-
-            <input type="checkbox" id="v3n3" />
-            <label for="v3n3">Voice 3, Note 3</label>
-
-            <input type="checkbox" id="v3n4" />
-            <label for="v3n4">Voice 3, Note 4</label>
-          </section>
-        </section>
-
-        <!-- track four: drill -->
-        <section class="track-four">
-          <h2>DTMF</h2>
-          <section class="controls">
-            <label for="rate">Rate</label>
-            <input
-              name="rate"
-              id="rate"
-              type="range"
-              min="0.1"
-              max="2"
-              value="1"
-              step="0.1" />
-          </section>
-          <!--
-
-          -->
-          <section class="pads">
-            <input type="checkbox" id="v4n1" />
-            <label for="v4n1">Voice 4, Note 1</label>
-
-            <input type="checkbox" id="v4n2" />
-            <label for="v4n2">Voice 4, Note 2</label>
-
-            <input type="checkbox" id="v4n3" />
-            <label for="v4n3">Voice 4, Note 3</label>
-
-            <input type="checkbox" id="v4n4" />
-            <label for="v4n4">Voice 4, Note 4</label>
-          </section>
-        </section>
+        
       </div>
     </div>
 

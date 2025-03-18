@@ -9,7 +9,7 @@ import { equalPower } from "helpers";
 const FREQ_AMT = 50;
 const START_FREQ = 48;
 
-export default function(audioCtx, destination, time, { level, tone, decay }) {
+export const bassDrum = (audioCtx, destination, time, { level, tone, decay }) => {
   // parameters
   const outputLevel = equalPower(level);
   const vcfFreq = 200 + tone * 20;
@@ -70,4 +70,4 @@ export default function(audioCtx, destination, time, { level, tone, decay }) {
   }, time - audioCtx.currentTime + 1000);
 
   return outputVCA;
-}
+};
