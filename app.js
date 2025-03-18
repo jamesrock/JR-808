@@ -2,11 +2,9 @@
 import { wavetable } from './wavetable.js';
 
 const audioCtx = new AudioContext();
+const steps = document.querySelectorAll('.step');
 
-// grab our checkboxes from the interface - we want to keep them in the groups they are in as each row represents a different sound or _voice_.
-const pads = document.querySelectorAll('.step');
-
-pads.forEach((item) => {
+steps.forEach((item) => {
   item.addEventListener('input', (e) => {
     instruments[instrument][parseFloat(e.target.value)] = e.target.checked ? 1 : 0;
   });
@@ -24,12 +22,11 @@ const instruments = [
   [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
   [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
   [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
 ];
 let instrument = 1;
 
 const resetPads = () => {
-  console.log('instrument', instrument, instruments[instrument]);
   instruments[instrument].forEach((step, stepIndex) => {
     document.querySelector(`.step[value="${stepIndex}"]`).checked = (step === 1 ? true : false);
   });
@@ -54,10 +51,6 @@ attackControl.addEventListener('input', (ev) => {
 }, false);
 
 let releaseTime = 0.5;
-// const releaseControl = document.querySelector('#release');
-// releaseControl.addEventListener('input', (ev) => {
-//   releaseTime = parseFloat(ev.target.value);
-// }, false);
 
 // Expose attack time & release time
 const sweepLength = 2;
@@ -84,16 +77,8 @@ function playSweep(time) {
 
 // Expose frequency & frequency modulation
 let pulseHz = 880;
-// const hzControl = document.querySelector('#hz');
-// hzControl.addEventListener('input', (ev) => {
-//   pulseHz = parseFloat(ev.target.value);
-// }, false);
 
 let lfoHz = 30;
-// const lfoControl = document.querySelector('#lfo');
-// lfoControl.addEventListener('input', (ev) => {
-//   lfoHz = parseFloat(ev.target.value);
-// }, false);
 
 const pulseTime = 1;
 function playPulse(time) {
@@ -119,16 +104,8 @@ function playPulse(time) {
 };
 
 let noiseDuration = 1;
-// const durControl = document.querySelector('#duration');
-// durControl.addEventListener('input', (ev) => {
-//   noiseDuration = ev.target.valueAsNumber;
-// }, false);
 
 let bandHz = 1000;
-// const bandControl = document.querySelector('#band');
-// bandControl.addEventListener('input', (ev) => {
-//   bandHz = ev.target.valueAsNumber;
-// }, false);
 
 function playNoise(time) {
   const bufferSize = audioCtx.sampleRate * noiseDuration; // set the time of the note
@@ -162,17 +139,13 @@ function playNoise(time) {
 };
 
 let playbackRate = 1;
-// const rateControl = document.querySelector("#rate");
-// rateControl.addEventListener('input', (ev) => {
-//   playbackRate = ev.target.valueAsNumber;
-// }, false);
 
 // Scheduling
 let tempo = 60;
 const bpmControl = document.querySelector('#bpm');
 const bpmValEl = document.querySelector('#bpmval');
 
-const steps = 16;
+const stepsInSequence = 16;
 
 bpmControl.addEventListener('input', (ev) => {
   tempo = ev.target.valueAsNumber;
@@ -186,11 +159,9 @@ let currentNote = 0; // The note we are currently playing
 let nextNoteTime = 0.0; // when the next note is due.
 function nextNote() {
   const secondsPerBeat = 60.0 / tempo;
-
   nextNoteTime += secondsPerBeat; // Add beat length to last beat time
-
-  // Advance the beat number, wrap to zero when reaching {steps}
-  currentNote = (currentNote + 1) % steps;
+  // Advance the beat number, wrap to zero when reaching {stepsInSequence}
+  currentNote = (currentNote + 1) % stepsInSequence;
 };
 
 // Create a queue for the notes that are to be played, with the current time that we want them to play:
@@ -199,7 +170,40 @@ const notesInQueue = [];
 function scheduleNote(beatNumber, time) {
   // Push the note into the queue, even if we're not playing.
   notesInQueue.push({ note: beatNumber, time: time });
-  if(instrument[beatNumber]) {
+  if(instruments[0][beatNumber]) {
+    playSweep(time);
+  };
+  if(instruments[1][beatNumber]) {
+    playSweep(time);
+  };
+  if(instruments[2][beatNumber]) {
+    playSweep(time);
+  };
+  if(instruments[3][beatNumber]) {
+    playSweep(time);
+  };
+  if(instruments[4][beatNumber]) {
+    playSweep(time);
+  };
+  if(instruments[5][beatNumber]) {
+    playSweep(time);
+  };
+  if(instruments[6][beatNumber]) {
+    playSweep(time);
+  };
+  if(instruments[7][beatNumber]) {
+    playSweep(time);
+  };
+  if(instruments[8][beatNumber]) {
+    playSweep(time);
+  };
+  if(instruments[9][beatNumber]) {
+    playSweep(time);
+  };
+  if(instruments[10][beatNumber]) {
+    playSweep(time);
+  };
+  if(instruments[11][beatNumber]) {
     playSweep(time);
   };
 };
@@ -225,17 +229,17 @@ function draw() {
   while (notesInQueue.length && notesInQueue[0].time < currentTime) {
     drawNote = notesInQueue[0].note;
     notesInQueue.shift(); // Remove note from queue
-  }
+  };
 
   // We only need to draw if the note has moved.
   if (lastNoteDrawn !== drawNote) {
-    // pads.forEach((pad) => {
-    //   pad.children[lastNoteDrawn * 2].style.borderColor = "var(--black)";
-    //   pad.children[drawNote * 2].style.borderColor = "var(--yellow)";
-    // });
-
+    // console.log('drawNote', drawNote);
+    steps.forEach((step) => {
+      step.style.borderColor = "var(--black)";
+    });
+    steps[drawNote].style.borderColor = "var(--yellow)";
     lastNoteDrawn = drawNote;
-  }
+  };
   // Set up to draw again
   requestAnimationFrame(draw);
 };
