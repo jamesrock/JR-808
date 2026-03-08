@@ -41,9 +41,9 @@ class Sequencer extends DisplayObject {
       new Channel([ClosedHats], [new LevelKnob()])
     ];
     this.sounds = new SoundManager({
-      'kick': '/audio/kick.aif',
-      'snare': '/audio/snare.aif',
-      'hats-closed': '/audio/hats-closed.aif',
+      'kick': '/audio/kick.mp3',
+      'snare': '/audio/snare.mp3',
+      'hats-closed': '/audio/hats-closed.mp3',
       // 'clap': '',
       // 'hats-open': '',
       // 'crash': '',
@@ -144,28 +144,6 @@ class Sequencer extends DisplayObject {
         this.sounds.play(this.keys[index]);
       };
     });
-
-    // if(this.instruments[0][beat]) {
-    //   this.sounds.play('kick');
-    // };
-    // if(this.instruments[1][beat]) {
-    //   this.sounds.play('snare');
-    // };
-    // if(this.instruments[2][beat]) {
-    //   this.sounds.play('clap');
-    // };
-    // if(this.instruments[3][beat]) {
-    //   this.sounds.play('hats-open');
-    // };
-    // if(this.instruments[4][beat]) {
-    //   this.sounds.play('hats-closed');
-    // };
-    // if(this.instruments[5][beat]) {
-    //   this.sounds.play('crash');
-    // };
-    // if(this.instruments[6][beat]) {
-    //   this.sounds.play('ride');
-    // };
 
     return this;
 
