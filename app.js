@@ -45,10 +45,6 @@ class Toggle extends DisplayObject {
   };
 };
 
-const createToggle = () => {
-
-};
-
 class Sequencer extends DisplayObject {
   constructor() {
 
@@ -72,8 +68,7 @@ class Sequencer extends DisplayObject {
     this.keys = Object.keys(this.sounds.sounds);
     this.instruments = this.keys.map(() => makeArray(16, () => 0));
     this.instrumentSelect = new Toggle(this.keys.map((inst, index) => [inst, index]), 'instrument', 0);
-    this.saved = this.storage.get('patterns') || [['empty', this.instruments]];
-    this.patternSelect = makeSelect(this.saved.map(([label], index) => [label, index]), 0);
+    this.saved = this.storage.get('patterns') || [];
 
     this.startButton = makeButton('start');
     this.saveButton = makeButton('save');
@@ -86,7 +81,6 @@ class Sequencer extends DisplayObject {
     this.instrumentSelect.appendTo(this.node);
     this.buttonsNode.appendChild(this.startButton);
     this.buttonsNode.appendChild(this.saveButton);
-    this.buttonsNode.appendChild(this.patternSelect);
     this.node.appendChild(this.buttonsNode);
     this.steps.appendTo(this.node);
 
@@ -107,28 +101,33 @@ class Sequencer extends DisplayObject {
       this.save();
     });
 
-    const bpmChangeHandler = () => {
+    this.bpmSelect.addEventListener('input', this.bpmChangeHandler.bind(this));
+    this.bpmChangeHandler();
 
-      this.bpmDisplay.innerText = this.bpmSelect.value;
-
-    };
-
-    this.bpmSelect.addEventListener('input', bpmChangeHandler);
-    bpmChangeHandler();
-
-    this.instrumentSelect.addEventListener('input', () => {
-      this.steps.steps.forEach((step, index) => {
-        if(this.instruments[this.instrumentSelect.getValue()][index]) {
-          step.enable();
-        }
-        else {
-          step.disable();
-        };
-      });
-
-    });
+    this.instrumentSelect.addEventListener('input', this.applyPattern.bind(this));
 
     this.sounds.load();
+
+    if(!this.saved.length) {
+      this.save('empty');
+    }
+    else {
+      this.renderPatternSelect();
+    };
+
+  };
+  applyPattern() {
+
+    this.steps.steps.forEach((step, index) => {
+      if(this.instruments[this.instrumentSelect.getValue()][index]) {
+        step.enable();
+      }
+      else {
+        step.disable();
+      };
+    });
+
+    return this;
 
   };
   start() {
@@ -221,14 +220,49 @@ class Sequencer extends DisplayObject {
     ];
 
   };
-  save() {
+  save(override) {
 
-    const name = prompt('name?');
-    const existing = this.storage.get('patterns');
+    let name = override ? override : prompt('name?');
 
-    this.storage.set('patterns', [...existing, [name, this.instruments]]);
+    if(!name) {return};
+
+    name += ` @${this.bpmSelect.value}`;
+    const existing = this.storage.get('patterns') || [];
+    this.saved = [...existing, [name, this.bpmSelect.value, this.instruments]];
+
+    this.storage.set('patterns', this.saved);
+    this.renderPatternSelect();
 
     return this;
+
+  };
+  renderPatternSelect() {
+
+    if(this.patternSelect) {
+      this.patternSelect.parentNode.removeChild(this.patternSelect);
+    };
+
+    this.patternSelect = makeSelect(this.saved.map(([label], index) => [label, index]), this.saved.length-1);
+
+    this.buttonsNode.appendChild(this.patternSelect);
+
+    this.patternSelect.addEventListener('input', this.patternChangeHandler.bind(this));
+    this.patternChangeHandler();
+
+    return this;
+
+  };
+  patternChangeHandler() {
+
+    this.bpmSelect.value = this.saved[this.patternSelect.value][1];
+    this.instruments = this.saved[this.patternSelect.value][2];
+    this.applyPattern();
+    this.bpmChangeHandler();
+
+  };
+  bpmChangeHandler() {
+
+    this.bpmDisplay.innerText = this.bpmSelect.value;
 
   };
   playing = false;

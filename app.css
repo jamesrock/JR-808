@@ -81,6 +81,12 @@ a {
       background-color: #e93323;
     }
   }
+
+  &[data-active="true"][data-enabled="true"] {
+    .step-indicator {
+      background-color: #4f0a05;
+    }
+  }
 }
 
 .channels {
