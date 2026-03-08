@@ -1,11 +1,13 @@
 import '/app.css';
 import {
+  Storage,
   SoundManager,
   DisplayObject,
   makeArray,
   makeInput,
   makeButton,
   makeNode,
+  makeToggle,
   makeSelect
 } from '@jamesrock/rockjs';
 
@@ -18,6 +20,35 @@ const makeSlider = (value, min, max, step = 1) => {
   return node;
 };
 
+class Toggle extends DisplayObject {
+  constructor(items, name = '{name}', value) {
+
+    super();
+
+    this.node = makeNode('form');
+    this.name = name;
+
+    this.node.appendChild(makeToggle(items, name, value));
+
+  };
+  getValue() {
+
+    const data = new FormData(this.node);
+
+    return data.get(this.name);
+
+  };
+  addEventListener(event, handler) {
+
+    this.node.addEventListener(event, handler);
+
+  };
+};
+
+const createToggle = () => {
+
+};
+
 class Sequencer extends DisplayObject {
   constructor() {
 
@@ -26,67 +57,54 @@ class Sequencer extends DisplayObject {
     this.node = makeNode('div', 'step-sequencer');
 
     this.steps = new Steps(this);
-    this.channels = [
-      new Channel([ACcent], [new LevelKnob()]),
-      new Channel([BassDrum], [new LevelKnob(), new ToneKnob(), new DecayKnob()]),
-      new Channel([SnareDrum], [new LevelKnob(), new ToneKnob(), new SnappyKnob()]),
-      new Channel([LowConga, LowTom], [new LevelKnob(), new TuningKnob()]),
-      new Channel([MidConga, MidTom], [new LevelKnob(), new TuningKnob()]),
-      new Channel([HiConga, HiTom], [new LevelKnob(), new TuningKnob()]),
-      new Channel([CLave, RimShot], [new LevelKnob()]),
-      new Channel([MAracas, handClaP], [new LevelKnob()]),
-      new Channel([CowBell], [new LevelKnob()]),
-      new Channel([CYmbal], [new LevelKnob(), new ToneKnob(), new DecayKnob()]),
-      new Channel([OpenHats], [new LevelKnob(), new DecayKnob()]),
-      new Channel([ClosedHats], [new LevelKnob()])
-    ];
+    // this.channels = this.setupChannelStrips();
     this.sounds = new SoundManager({
       'kick': '/audio/kick.mp3',
       'snare': '/audio/snare.mp3',
       'hats-closed': '/audio/hats-closed.mp3',
-      // 'clap': '',
-      // 'hats-open': '',
+      'hats-open': '/audio/hats-open.mp3',
+      'clap': '/audio/clap.mp3',
+      'clave': '/audio/clave.mp3',
       // 'crash': '',
       // 'ride': '',
     });
-    this.instruments = [
-      [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-      [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-      [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-      [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-      [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-      [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-      [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-      [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-      [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-      [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-      [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-      [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
-    ];
-    this.instrument = 0;
+    this.storage = new Storage('me.jamesrock.seq');
     this.keys = Object.keys(this.sounds.sounds);
-    this.instrumentSelect = makeSelect(this.keys.map((inst, index) => [inst, index]));
+    this.instruments = this.keys.map(() => makeArray(16, () => 0));
+    this.instrumentSelect = new Toggle(this.keys.map((inst, index) => [inst, index]), 'instrument', 0);
+    this.saved = this.storage.get('patterns') || [['empty', this.instruments]];
+    this.patternSelect = makeSelect(this.saved.map(([label], index) => [label, index]), 0);
+
     this.startButton = makeButton('start');
+    this.saveButton = makeButton('save');
     this.bpmSelect = makeSlider(120, 60, 200);
     this.bpmDisplay = makeNode('div', 'bpm-display');
+    this.buttonsNode = makeNode('div', 'buttons');
 
     this.node.appendChild(this.bpmSelect);
     this.node.appendChild(this.bpmDisplay);
-    this.node.appendChild(this.instrumentSelect);
-    this.node.appendChild(this.startButton);
+    this.instrumentSelect.appendTo(this.node);
+    this.buttonsNode.appendChild(this.startButton);
+    this.buttonsNode.appendChild(this.saveButton);
+    this.buttonsNode.appendChild(this.patternSelect);
+    this.node.appendChild(this.buttonsNode);
     this.steps.appendTo(this.node);
 
     this.startButton.addEventListener('click', () => {
 
       if(this.playing) {
         this.stop();
-        this.startButton.innerText = 'play';
+        this.startButton.innerText = 'start';
       }
       else {
         this.start();
         this.startButton.innerText = 'stop';
       };
 
+    });
+
+    this.saveButton.addEventListener('click', () => {
+      this.save();
     });
 
     const bpmChangeHandler = () => {
@@ -99,9 +117,8 @@ class Sequencer extends DisplayObject {
     bpmChangeHandler();
 
     this.instrumentSelect.addEventListener('input', () => {
-      // re-apply enabled states based on instruments array
       this.steps.steps.forEach((step, index) => {
-        if(this.instruments[this.instrumentSelect.value][index]) {
+        if(this.instruments[this.instrumentSelect.getValue()][index]) {
           step.enable();
         }
         else {
@@ -160,16 +177,61 @@ class Sequencer extends DisplayObject {
   };
   enable(beat) {
 
-    this.instruments[this.instrumentSelect.value][beat] = 1;
+    this.instruments[this.instrumentSelect.getValue()][beat] = 1;
 
   };
   disable(beat) {
 
-    this.instruments[this.instrumentSelect.value][beat] = 0;
+    this.instruments[this.instrumentSelect.getValue()][beat] = 0;
+
+  };
+  setupChannelStrips() {
+
+    const Kick = new Instrument('BassDrum');
+    const Snare = new Instrument('SnareDrum');
+    const RimShot = new Instrument('RimShot');
+    const Clap = new Instrument('handClaP');
+    const LowConga = new Instrument('LowConga');
+    const LowTom = new Instrument('LowTom');
+    const MidConga = new Instrument('MidConga');
+    const MidTom = new Instrument('MidTom');
+    const HiConga = new Instrument('HiConga');
+    const HiTom = new Instrument('HiTom');
+    const Accent = new Instrument('ACcent');
+    const Clave = new Instrument('CLave');
+    const Maracas = new Instrument('MAracas');
+    const CowBell = new Instrument('CowBell');
+    const Cymbal = new Instrument('CYmbal');
+    const OpenHats = new Instrument('OpenHats');
+    const ClosedHats = new Instrument('ClosedHats');
+
+    return [
+      new Channel([Accent], [new LevelKnob()]),
+      new Channel([Kick], [new LevelKnob(), new ToneKnob(), new DecayKnob()]),
+      new Channel([Snare], [new LevelKnob(), new ToneKnob(), new SnappyKnob()]),
+      new Channel([LowConga, LowTom], [new LevelKnob(), new TuningKnob()]),
+      new Channel([MidConga, MidTom], [new LevelKnob(), new TuningKnob()]),
+      new Channel([HiConga, HiTom], [new LevelKnob(), new TuningKnob()]),
+      new Channel([Clave, RimShot], [new LevelKnob()]),
+      new Channel([Maracas, Clap], [new LevelKnob()]),
+      new Channel([CowBell], [new LevelKnob()]),
+      new Channel([Cymbal], [new LevelKnob(), new ToneKnob(), new DecayKnob()]),
+      new Channel([OpenHats], [new LevelKnob(), new DecayKnob()]),
+      new Channel([ClosedHats], [new LevelKnob()])
+    ];
+
+  };
+  save() {
+
+    const name = prompt('name?');
+    const existing = this.storage.get('patterns');
+
+    this.storage.set('patterns', [...existing, [name, this.instruments]]);
+
+    return this;
 
   };
   playing = false;
-  stepCount = 16;
   stepLength = 16;
   currentStep = 0;
   modes = {
@@ -357,23 +419,6 @@ class Channel {
   };
 };
 
-const ACcent = new Instrument('ACcent');
-const BassDrum = new Instrument('BassDrum');
-const SnareDrum = new Instrument('SnareDrum');
-const LowConga = new Instrument('LowConga');
-const LowTom = new Instrument('LowTom');
-const MidConga = new Instrument('MidConga');
-const MidTom = new Instrument('MidTom');
-const HiConga = new Instrument('HiConga');
-const HiTom = new Instrument('HiTom');
-const CLave = new Instrument('CLave');
-const RimShot = new Instrument('RimShot');
-const MAracas = new Instrument('MAracas');
-const handClaP = new Instrument('handClaP');
-const CowBell = new Instrument('CowBell');
-const CYmbal = new Instrument('CYmbal');
-const OpenHats = new Instrument('OpenHats');
-const ClosedHats = new Instrument('ClosedHats');
 const sequencer = new Sequencer();
 
 console.log(sequencer);

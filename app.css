@@ -143,3 +143,19 @@ button {
   align-items: start;
   gap: 20px;
 }
+
+.toggle {
+  display: flex;
+  gap: 10px;
+
+  .toggle-item {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+}
+
+.buttons {
+  display: flex;
+  gap: 5px;
+}
