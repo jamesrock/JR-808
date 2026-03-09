@@ -93,22 +93,22 @@ export class SoundManager {
 };
 
 class Toggle extends DisplayObject {
-  constructor(items, name = '{name}', value, className) {
+  constructor(items, name = '{name}', value, className, title = '{title}') {
 
     super();
 
     this.node = makeNode('form', className);
     this.name = name;
+    this.title = title;
 
     this.node.appendChild(makeToggle(items, name, value));
 
-    this.setProp('title', className);
+    this.setProp('title', title);
 
   };
   getValue() {
 
     const data = new FormData(this.node);
-
     return data.get(this.name);
 
   };
@@ -176,7 +176,7 @@ class Sequencer extends DisplayObject {
     this.storage = new Storage('me.jamesrock.seq');
     this.keys = this.sounds.keys;
     this.instruments = this.keys.map((name) => new Instrument(name));
-    this.instrumentSelect = new Toggle(this.keys.map((inst, index) => [inst, index]), 'instrument', 0, 'instruments');
+    this.instrumentSelect = new Toggle(this.keys.map((inst, index) => [inst, index]), 'instrument', 0, 'instruments', 'Instrument');
 
     this.startButton = makeButton('start');
     this.saveButton = makeButton('save');
@@ -375,7 +375,7 @@ class Sequencer extends DisplayObject {
 
     const saved = this.storage.get('patterns');
 
-    this.patternSelect = new Toggle(saved.map(([label], index) => [label, index]), 'pattern', saved.length-1, 'patterns');
+    this.patternSelect = new Toggle(saved.map(([label], index) => [label, index]), 'pattern', saved.length-1, 'patterns', 'Pattern');
 
     this.patternSelect.appendTo(this.patternsNode);
 

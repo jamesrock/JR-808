@@ -240,15 +240,15 @@ button {
   align-items: center;
 
   button {
-    padding: 6px 12px;
+    padding: 10px 15px;
     background-color: var(--red);
-    color: var(--white);
+    color: var(--foreground);
     border-radius: 2px;
     font-weight: 700;
     text-transform: uppercase;
     border: 0;
     cursor: pointer;
-    width: 80px;
+    width: 90px;
   }
 }
 
