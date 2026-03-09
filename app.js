@@ -9,7 +9,8 @@ import {
   makeNode,
   makeToggle,
   getXAsPercentOfY,
-  floorTo
+  floorTo,
+  isTiny
 } from '@jamesrock/rockjs';
 
 const makeSlider = (value, min, max, step = 1) => {
@@ -101,6 +102,8 @@ class Toggle extends DisplayObject {
 
     this.node.appendChild(makeToggle(items, name, value));
 
+    this.setProp('title', className);
+
   };
   getValue() {
 
@@ -181,6 +184,8 @@ class Sequencer extends DisplayObject {
     this.panningSelect = new Slider('PAN', 0, -1, 1, 0.1, (value) => getXAsPercentOfY(value, 1));
     this.volumeSelect = new Slider('LEVEL', 0.5, 0, 1, 0.05, (value) => floorTo(getXAsPercentOfY(value, 1)));
     this.controllersNode = makeNode('div', 'controllers');
+    this.controllersLeftNode = makeNode('div', 'controllers-left');
+    this.controllersRightNode = makeNode('div', 'controllers-right');
     this.buttonsNode = makeNode('div', 'buttons');
     this.slidersNode = makeNode('div', 'sliders');
     this.patternsNode = makeNode('div', 'patterns');
@@ -190,10 +195,14 @@ class Sequencer extends DisplayObject {
     this.bpmSelect.appendTo(this.slidersNode);
     this.buttonsNode.appendChild(this.startButton);
     this.buttonsNode.appendChild(this.saveButton);
-    this.instrumentSelect.appendTo(this.controllersNode);
-    this.controllersNode.appendChild(this.slidersNode);
-    this.controllersNode.appendChild(this.buttonsNode);
-    this.controllersNode.appendChild(this.patternsNode);
+    this.instrumentSelect.appendTo(this.controllersLeftNode);
+    this.controllersLeftNode.appendChild(this.slidersNode);
+    this.controllersRightNode.appendChild(this.patternsNode);
+    this.controllersRightNode.appendChild(this.buttonsNode);
+
+    this.controllersNode.appendChild(this.controllersLeftNode);
+    this.controllersNode.appendChild(this.controllersRightNode);
+
     this.node.appendChild(this.controllersNode);
     this.steps.appendTo(this.node);
 
@@ -235,25 +244,6 @@ class Sequencer extends DisplayObject {
     });
 
   };
-  applyPattern() {
-
-    this.steps.steps.forEach((step, index) => {
-      if(this.instruments[this.instrumentSelect.getValue()].steps[index]) {
-        step.enable();
-      }
-      else {
-        step.disable();
-      };
-    });
-
-    const channel = this.sounds.mixer[this.keys[this.instrumentSelect.getValue()]];
-
-    this.volumeSelect.setValue(channel[0]);
-    this.panningSelect.setValue(channel[1]);
-
-    return this;
-
-  };
   applyPresets() {
 
     this.presets.forEach((item) => {
@@ -275,6 +265,11 @@ class Sequencer extends DisplayObject {
     this.steps.steps[this.currentStep].flash();
 
     this.play(this.currentStep);
+
+    if(this.queued && this.currentStep === (this.steps.count - 1)) {
+      this.patternChangeHandler(true);
+      this.queued = false;
+    };
 
     if(this.currentStep===(this.steps.count - 1)) {
       this.currentStep = 0;
@@ -392,7 +387,12 @@ class Sequencer extends DisplayObject {
     return this;
 
   };
-  patternChangeHandler() {
+  patternChangeHandler(force = false) {
+
+    if(!force && this.playing) {
+      this.queued = true;
+      return;
+    };
 
     const saved = this.storage.get('patterns');
     const pattern = saved[this.patternSelect.getValue()];
@@ -402,9 +402,29 @@ class Sequencer extends DisplayObject {
     this.applyPattern();
 
   };
+  applyPattern() {
+
+    this.steps.steps.forEach((step, index) => {
+      if(this.instruments[this.instrumentSelect.getValue()].steps[index]) {
+        step.enable();
+      }
+      else {
+        step.disable();
+      };
+    });
+
+    const channel = this.sounds.mixer[this.keys[this.instrumentSelect.getValue()]];
+
+    this.volumeSelect.setValue(channel[0]);
+    this.panningSelect.setValue(channel[1]);
+
+    return this;
+
+  };
   playing = false;
   stepLength = 16;
   currentStep = 0;
+  queued = false;
   modes = {
     '1/16': 15000,
     '1/8': 30000,
@@ -555,3 +575,7 @@ const sequencer = new Sequencer();
 console.log(sequencer);
 
 sequencer.appendTo(document.body);
+
+if(isTiny) {
+  document.documentElement.style.setProperty('--pad-size', `${((window.innerWidth - 60) - 30) / 4}px`);
+};

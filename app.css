@@ -55,6 +55,11 @@ body {
   padding: 50px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  @media (max-width: 400px) {
+    padding: 30px;
+  }
+
 }
 
 a {
@@ -67,11 +72,20 @@ a {
   flex-direction: column;
   align-items: start;
   gap: 20px;
+
+  @media (max-width: 400px) {
+    gap: 40px;
+  }
+
 }
 
 .steps {
   display: flex;
   gap: 10px;
+
+  @media (max-width: 400px) {
+    flex-wrap: wrap;
+  }
 }
 
 .step {
@@ -83,6 +97,11 @@ a {
   padding-top: 10px;
   box-sizing: border-box;
   cursor: pointer;
+
+  @media (max-width: 400px) {
+    height: var(--pad-size);
+    width: var(--pad-size);
+  }
 
   &[data-color="red"] {
     background-color: var(--red);
@@ -186,8 +205,9 @@ button {
   input[type="radio"] {
     appearance: none;
     position: relative;
-    width: 10px;
-    height: 10px;
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
     &:before {
       display: block;
       content: '';
@@ -201,9 +221,13 @@ button {
       border-radius: 100%;
       border: solid 2px var(--white);
       transition: background-color .25s;
+      box-sizing: border-box;
     }
     &:checked:before {
       background-color: red;
+    }
+    &:checked + label {
+      color: var(--yellow);
     }
   }
 
@@ -264,4 +288,37 @@ input[type="range"] {
   display: flex;
   gap: 40px;
   align-items: end;
+
+  @media (max-width: 400px) {
+    flex-direction: column;
+    width: 100%;
+    gap: 50px;
+  }
+
+}
+
+.controllers-left,
+.controllers-right {
+  display: flex;
+  gap: 40px;
+  align-items: end;
+
+  @media (max-width: 400px) {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+}
+
+[data-title] {
+  position: relative;
+  &:before {
+    content: attr(data-title);
+    font-size: 16px;
+    position: absolute;
+    top: -30px;
+    text-transform: uppercase;
+    letter-spacing: 0.25px;
+    font-weight: 800;
+  }
 }
