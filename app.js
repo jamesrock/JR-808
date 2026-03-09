@@ -74,23 +74,17 @@ export class SoundManager {
     panner.pan.value = this.mixer[sound][1];
 
     source.connect(gainer).connect(panner).connect(this.context.destination);
-    // source.connect(panner).connect(this.context.destination);
-    // source.connect(this.context.destination);
 
     source.start();
 
   };
   volume(sound, value) {
 
-    console.log(`SoundManager.volume(${sound}, ${value})`);
-
     this.mixer[sound][0] = value;
     return this;
 
   };
   pan(sound, value) {
-
-    console.log(`SoundManager.pan(${sound}, ${value})`);
 
     this.mixer[sound][1] = value;
     return this;
