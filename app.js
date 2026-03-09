@@ -8,7 +8,9 @@ import {
   makeButton,
   makeNode,
   makeToggle,
-  makeSelect
+  makeSelect,
+  getXAsPercentOfY,
+  floorTo
 } from '@jamesrock/rockjs';
 
 const makeSlider = (value, min, max, step = 1) => {
@@ -21,7 +23,6 @@ const makeSlider = (value, min, max, step = 1) => {
 };
 
 const toMixer = (keys, saved) => {
-  console.log(keys, saved);
   const out = {};
   saved.forEach((item, index) => {
     out[keys[index]] = item;
@@ -118,7 +119,7 @@ class Toggle extends DisplayObject {
 };
 
 class Slider extends DisplayObject {
-  constructor(label = '{label}', value, min, max, step = 1) {
+  constructor(label = '{label}', value, min, max, step = 1, transform = (a) => a) {
 
     super();
 
@@ -126,6 +127,7 @@ class Slider extends DisplayObject {
     this.display = makeNode('div', 'slider-display');
     this.slider = makeSlider(value, min, max, step);
     this.label = label;
+    this.transform = transform;
 
     this.node.appendChild(this.slider);
     this.node.appendChild(this.display);
@@ -151,7 +153,7 @@ class Slider extends DisplayObject {
   };
   inputHandler() {
 
-    this.display.innerHTML = `<div>${this.label}</div><div>${this.slider.value}</div>`;
+    this.display.innerHTML = `<div class="slider-display-label">${this.label}</div><div class="slider-display-value">${this.transform(this.slider.value)}</div>`;
 
   };
 };
@@ -183,15 +185,15 @@ class Sequencer extends DisplayObject {
     this.startButton = makeButton('start');
     this.saveButton = makeButton('save');
     this.bpmSelect = new Slider('BPM', 120, 60, 180, 2);
-    this.panningSelect = new Slider('PAN', 0, -1, 1, 0.1);
-    this.volumeSelect = new Slider('LEVEL', 0.5, 0, 1, 0.1);
+    this.panningSelect = new Slider('PAN', 0, -1, 1, 0.1, (value) => getXAsPercentOfY(value, 1));
+    this.volumeSelect = new Slider('LEVEL', 0.5, 0, 1, 0.05, (value) => floorTo(getXAsPercentOfY(value, 1)));
     this.controllersNode = makeNode('div', 'controllers');
     this.buttonsNode = makeNode('div', 'buttons');
     this.slidersNode = makeNode('div', 'sliders');
 
-    this.bpmSelect.appendTo(this.slidersNode);
-    this.panningSelect.appendTo(this.slidersNode);
     this.volumeSelect.appendTo(this.slidersNode);
+    this.panningSelect.appendTo(this.slidersNode);
+    this.bpmSelect.appendTo(this.slidersNode);
     this.buttonsNode.appendChild(this.startButton);
     this.buttonsNode.appendChild(this.saveButton);
     this.instrumentSelect.appendTo(this.controllersNode);

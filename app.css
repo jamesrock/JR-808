@@ -27,12 +27,12 @@
 }
 
 :root {
-  --background: #232425;
-  --foreground: #FFF;
   --red: #c0463b;
   --orange: #dc9245;
   --yellow: #ddd45d;
   --white: #e9e8e7;
+  --background: #232425;
+  --foreground: var(--white);
 }
 
 * {
@@ -194,7 +194,7 @@ button {
   button {
     padding: 8px 12px;
     background-color: var(--red);
-    color: white;
+    color: var(--white);
     border-radius: 2px;
     font-weight: 700;
     text-transform: uppercase;
@@ -217,10 +217,17 @@ input[type="range"] {
     flex-direction: column;
     justify-content: center;
     gap: 10px;
+    width: 50px;
 
     .slider-display {
       text-align: center;
       line-height: 1.2;
+      .slider-display-label {
+        font-weight: 700;
+      }
+      .slider-display-value {
+        font-weight: 600;
+      }
     }
 
   }
@@ -229,6 +236,6 @@ input[type="range"] {
 
 .controllers {
   display: flex;
-  gap: 50px;
+  gap: 40px;
   align-items: end;
 }
