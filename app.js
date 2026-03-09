@@ -8,7 +8,6 @@ import {
   makeButton,
   makeNode,
   makeToggle,
-  makeSelect,
   getXAsPercentOfY,
   floorTo
 } from '@jamesrock/rockjs';
@@ -184,6 +183,7 @@ class Sequencer extends DisplayObject {
     this.controllersNode = makeNode('div', 'controllers');
     this.buttonsNode = makeNode('div', 'buttons');
     this.slidersNode = makeNode('div', 'sliders');
+    this.patternsNode = makeNode('div', 'patterns');
 
     this.volumeSelect.appendTo(this.slidersNode);
     this.panningSelect.appendTo(this.slidersNode);
@@ -193,6 +193,7 @@ class Sequencer extends DisplayObject {
     this.instrumentSelect.appendTo(this.controllersNode);
     this.controllersNode.appendChild(this.slidersNode);
     this.controllersNode.appendChild(this.buttonsNode);
+    this.controllersNode.appendChild(this.patternsNode);
     this.node.appendChild(this.controllersNode);
     this.steps.appendTo(this.node);
 
@@ -374,14 +375,14 @@ class Sequencer extends DisplayObject {
   renderPatternSelect() {
 
     if(this.patternSelect) {
-      this.patternSelect.parentNode.removeChild(this.patternSelect);
+      this.patternSelect.destroy();
     };
 
     const saved = this.storage.get('patterns');
 
-    this.patternSelect = makeSelect(saved.map(([label], index) => [label, index]), saved.length-1);
+    this.patternSelect = new Toggle(saved.map(([label], index) => [label, index]), 'pattern', saved.length-1, 'patterns');
 
-    this.buttonsNode.appendChild(this.patternSelect);
+    this.patternSelect.appendTo(this.patternsNode);
 
     this.patternSelect.addEventListener('input', () => {
       this.patternChangeHandler();
@@ -394,7 +395,7 @@ class Sequencer extends DisplayObject {
   patternChangeHandler() {
 
     const saved = this.storage.get('patterns');
-    const pattern = saved[this.patternSelect.value];
+    const pattern = saved[this.patternSelect.getValue()];
     this.bpmSelect.setValue(pattern[1]);
     this.instruments = pattern[2].map((steps, index) => new Instrument(this.keys[index], steps));
     this.sounds.mixer = toMixer(this.keys, pattern[3]);
