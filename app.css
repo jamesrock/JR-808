@@ -1,6 +1,38 @@
+@font-face {
+	font-family: 'Poppins';
+	font-weight: 500;
+	font-style: normal;
+	src: url('/fonts/Poppins-Medium.ttf');
+}
+
+@font-face {
+	font-family: 'Poppins';
+	font-weight: 600;
+	font-style: normal;
+	src: url('/fonts/Poppins-SemiBold.ttf');
+}
+
+@font-face {
+	font-family: 'Poppins';
+	font-weight: 700;
+	font-style: normal;
+	src: url('/fonts/Poppins-Bold.ttf');
+}
+
+@font-face {
+	font-family: 'Poppins';
+	font-weight: 800;
+	font-style: normal;
+	src: url('/fonts/Poppins-ExtraBold.ttf');
+}
+
 :root {
   --background: #232425;
   --foreground: #FFF;
+  --red: #c0463b;
+  --orange: #dc9245;
+  --yellow: #ddd45d;
+  --white: #e9e8e7;
 }
 
 * {
@@ -17,8 +49,9 @@ body {
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: sans-serif;
+  font-family: 'Poppins', sans-serif;
   font-size: 15px;
+  font-weight: 500;
   padding: 50px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -29,11 +62,11 @@ a {
   text-decoration: none;
 }
 
-.machine {
-  padding: 50px;
+.step-sequencer {
   display: flex;
   flex-direction: column;
-  gap: 30px;
+  align-items: start;
+  gap: 20px;
 }
 
 .steps {
@@ -52,19 +85,19 @@ a {
   cursor: pointer;
 
   &[data-color="red"] {
-    background-color: #c0463b;
+    background-color: var(--red);
   }
 
   &[data-color="orange"] {
-    background-color: #dc9245;
+    background-color: var(--orange);
   }
 
   &[data-color="yellow"] {
-    background-color: #ddd45d;
+    background-color: var(--yellow);
   }
 
   &[data-color="white"] {
-    background-color: #e9e8e7;
+    background-color: var(--white);
   }
 
   .step-indicator {
@@ -113,8 +146,7 @@ a {
   font-weight: 600;
 }
 
-.modifiers,
-.instruments {
+.modifiers {
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -137,31 +169,66 @@ button {
   font-family: inherit;
 }
 
-button {
-  padding: 3px 12px 5px;
-  background-color: white;
-  border-radius: 6px;
-}
-
-.step-sequencer {
-  display: flex;
-  flex-direction: column;
-  align-items: start;
-  gap: 20px;
-}
-
 .toggle {
   display: flex;
-  gap: 10px;
+  gap: 6px;
+  flex-direction: column;
 
   .toggle-item {
     display: flex;
     gap: 10px;
     align-items: center;
   }
+
+  label {
+    cursor: pointer;
+  }
+
 }
 
 .buttons {
   display: flex;
-  gap: 5px;
+  flex-direction: column-reverse;
+  gap: 10px;
+
+  button {
+    padding: 8px 12px;
+    background-color: var(--red);
+    color: white;
+    border-radius: 2px;
+    font-weight: 700;
+    text-transform: uppercase;
+    border: 0;
+    cursor: pointer;
+  }
+}
+
+input[type="range"] {
+  writing-mode: vertical-lr;
+  direction: rtl;
+}
+
+.sliders {
+  display: flex;
+  gap: 20px;
+
+  .slider {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 10px;
+
+    .slider-display {
+      text-align: center;
+      line-height: 1.2;
+    }
+
+  }
+
+}
+
+.controllers {
+  display: flex;
+  gap: 50px;
+  align-items: end;
 }

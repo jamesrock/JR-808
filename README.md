@@ -1,3 +1,3 @@
-# step-sequencer
+# JR-808
 
-to eventually become a recreation of the 808
+Step Sequencer in the style of the classic TR-808.

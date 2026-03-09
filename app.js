@@ -1,7 +1,7 @@
 import '/app.css';
 import {
   Storage,
-  SoundManager,
+  // SoundManager,
   DisplayObject,
   makeArray,
   makeInput,
@@ -20,12 +20,89 @@ const makeSlider = (value, min, max, step = 1) => {
   return node;
 };
 
+const toMixer = (keys, saved) => {
+  console.log(keys, saved);
+  const out = {};
+  saved.forEach((item, index) => {
+    out[keys[index]] = item;
+  });
+  return out;
+};
+
+export class SoundManager {
+  constructor(sounds) {
+
+    this.context = new AudioContext();
+    this.sounds = sounds;
+    this.buffers = {};
+    this.mixer = {};
+    this.keys = Object.keys(this.sounds);
+
+  };
+  async load() {
+
+    return Promise.all(this.keys.map((key) => this.loadBuffer(key, this.sounds[key]))).then((items) => {
+      items.forEach(([name, buffer]) => {
+        this.buffers[name] = buffer;
+        this.mixer[name] = [0.5, 0];
+      });
+    });
+
+  };
+  async loadBuffer(name, path) {
+
+    const response = await fetch(path);
+    const arrayBuffer = await response.arrayBuffer();
+    const audioBuffer = await this.context.decodeAudioData(arrayBuffer);
+    return [name, audioBuffer];
+
+  };
+  play(sound = 'point') {
+
+    if(!this.buffers[sound]) {
+      console.log(`SoundManager: '${sound}' not loaded!`);
+      return;
+    };
+
+    const source = this.context.createBufferSource();
+    const gainer = this.context.createGain();
+    const panner = this.context.createStereoPanner();
+
+    source.buffer = this.buffers[sound];
+    gainer.gain.value = this.mixer[sound][0];
+    panner.pan.value = this.mixer[sound][1];
+
+    source.connect(gainer).connect(panner).connect(this.context.destination);
+    // source.connect(panner).connect(this.context.destination);
+    // source.connect(this.context.destination);
+
+    source.start();
+
+  };
+  volume(sound, value) {
+
+    console.log(`SoundManager.volume(${sound}, ${value})`);
+
+    this.mixer[sound][0] = value;
+    return this;
+
+  };
+  pan(sound, value) {
+
+    console.log(`SoundManager.pan(${sound}, ${value})`);
+
+    this.mixer[sound][1] = value;
+    return this;
+
+  };
+};
+
 class Toggle extends DisplayObject {
-  constructor(items, name = '{name}', value) {
+  constructor(items, name = '{name}', value, className) {
 
     super();
 
-    this.node = makeNode('form');
+    this.node = makeNode('form', className);
     this.name = name;
 
     this.node.appendChild(makeToggle(items, name, value));
@@ -38,9 +115,43 @@ class Toggle extends DisplayObject {
     return data.get(this.name);
 
   };
-  addEventListener(event, handler) {
+};
 
-    this.node.addEventListener(event, handler);
+class Slider extends DisplayObject {
+  constructor(label = '{label}', value, min, max, step = 1) {
+
+    super();
+
+    this.node = makeNode('div', 'slider');
+    this.display = makeNode('div', 'slider-display');
+    this.slider = makeSlider(value, min, max, step);
+    this.label = label;
+
+    this.node.appendChild(this.slider);
+    this.node.appendChild(this.display);
+
+    this.node.addEventListener('input', () => {
+      this.inputHandler();
+    });
+
+    this.inputHandler();
+
+  };
+  getValue() {
+
+    return this.slider.value;
+
+  };
+  setValue(value) {
+
+    this.slider.value = value;
+    this.inputHandler();
+    return this;
+
+  };
+  inputHandler() {
+
+    this.display.innerHTML = `<div>${this.label}</div><div>${this.slider.value}</div>`;
 
   };
 };
@@ -65,23 +176,28 @@ class Sequencer extends DisplayObject {
       // 'ride': '',
     });
     this.storage = new Storage('me.jamesrock.seq');
-    this.keys = Object.keys(this.sounds.sounds);
-    this.instruments = this.keys.map(() => makeArray(16, () => 0));
-    this.instrumentSelect = new Toggle(this.keys.map((inst, index) => [inst, index]), 'instrument', 0);
-    this.saved = this.storage.get('patterns') || [];
+    this.keys = this.sounds.keys;
+    this.instruments = this.keys.map((name) => new Instrument(name));
+    this.instrumentSelect = new Toggle(this.keys.map((inst, index) => [inst, index]), 'instrument', 0, 'instruments');
 
     this.startButton = makeButton('start');
     this.saveButton = makeButton('save');
-    this.bpmSelect = makeSlider(120, 60, 200);
-    this.bpmDisplay = makeNode('div', 'bpm-display');
+    this.bpmSelect = new Slider('BPM', 120, 60, 180, 2);
+    this.panningSelect = new Slider('PAN', 0, -1, 1, 0.1);
+    this.volumeSelect = new Slider('LEVEL', 0.5, 0, 1, 0.1);
+    this.controllersNode = makeNode('div', 'controllers');
     this.buttonsNode = makeNode('div', 'buttons');
+    this.slidersNode = makeNode('div', 'sliders');
 
-    this.node.appendChild(this.bpmSelect);
-    this.node.appendChild(this.bpmDisplay);
-    this.instrumentSelect.appendTo(this.node);
+    this.bpmSelect.appendTo(this.slidersNode);
+    this.panningSelect.appendTo(this.slidersNode);
+    this.volumeSelect.appendTo(this.slidersNode);
     this.buttonsNode.appendChild(this.startButton);
     this.buttonsNode.appendChild(this.saveButton);
-    this.node.appendChild(this.buttonsNode);
+    this.instrumentSelect.appendTo(this.controllersNode);
+    this.controllersNode.appendChild(this.slidersNode);
+    this.controllersNode.appendChild(this.buttonsNode);
+    this.node.appendChild(this.controllersNode);
     this.steps.appendTo(this.node);
 
     this.startButton.addEventListener('click', () => {
@@ -101,30 +217,54 @@ class Sequencer extends DisplayObject {
       this.save();
     });
 
-    this.bpmSelect.addEventListener('input', this.bpmChangeHandler.bind(this));
-    this.bpmChangeHandler();
+    this.instrumentSelect.addEventListener('input', () => {
+      this.applyPattern();
+    });
 
-    this.instrumentSelect.addEventListener('input', this.applyPattern.bind(this));
+    this.panningSelect.addEventListener('input', () => {
+      this.sounds.pan(this.keys[this.instrumentSelect.getValue()], Number(this.panningSelect.getValue()));
+    });
 
-    this.sounds.load();
+    this.volumeSelect.addEventListener('input', () => {
+      this.sounds.volume(this.keys[this.instrumentSelect.getValue()], Number(this.volumeSelect.getValue()));
+    });
 
-    if(!this.saved.length) {
-      this.save('empty');
-    }
-    else {
-      this.renderPatternSelect();
+    if(!this.storage.get('patterns')) {
+      this.applyPresets();
     };
+
+    this.sounds.load().then(() => {
+      this.renderPatternSelect();
+    });
 
   };
   applyPattern() {
 
     this.steps.steps.forEach((step, index) => {
-      if(this.instruments[this.instrumentSelect.getValue()][index]) {
+      if(this.instruments[this.instrumentSelect.getValue()].steps[index]) {
         step.enable();
       }
       else {
         step.disable();
       };
+    });
+
+    const channel = this.sounds.mixer[this.keys[this.instrumentSelect.getValue()]];
+
+    this.volumeSelect.setValue(channel[0]);
+    this.panningSelect.setValue(channel[1]);
+
+    return this;
+
+  };
+  applyPresets() {
+
+    this.presets.forEach((item) => {
+
+      const existing = this.storage.get('patterns') || [];
+      const saved = [...existing, item];
+      this.storage.set('patterns', saved);
+
     });
 
     return this;
@@ -148,16 +288,16 @@ class Sequencer extends DisplayObject {
 
     this.timer = setTimeout(() => {
       this.start();
-    }, this.modes[this.mode]/this.bpmSelect.value);
+    }, this.modes[this.mode]/this.bpmSelect.getValue());
 
     return this;
 
   };
   play(beat) {
 
-    this.instruments.forEach((inst, index) => {
-      if(inst[beat]) {
-        this.sounds.play(this.keys[index]);
+    this.instruments.forEach((inst) => {
+      if(inst.steps[beat]) {
+        this.sounds.play(inst.name);
       };
     });
 
@@ -176,12 +316,12 @@ class Sequencer extends DisplayObject {
   };
   enable(beat) {
 
-    this.instruments[this.instrumentSelect.getValue()][beat] = 1;
+    this.instruments[this.instrumentSelect.getValue()].steps[beat] = 1;
 
   };
   disable(beat) {
 
-    this.instruments[this.instrumentSelect.getValue()][beat] = 0;
+    this.instruments[this.instrumentSelect.getValue()].steps[beat] = 0;
 
   };
   setupChannelStrips() {
@@ -226,11 +366,10 @@ class Sequencer extends DisplayObject {
 
     if(!name) {return};
 
-    name += ` @${this.bpmSelect.value}`;
-    const existing = this.storage.get('patterns') || [];
-    this.saved = [...existing, [name, this.bpmSelect.value, this.instruments]];
-
-    this.storage.set('patterns', this.saved);
+    name += ` @${this.bpmSelect.getValue()}`;
+    const existing = this.storage.get('patterns');
+    const saved = [...existing, [name, this.bpmSelect.getValue(), this.instruments.map((inst) => inst.steps), this.instruments.map((inst) => this.sounds.mixer[inst.name])]];
+    this.storage.set('patterns', saved);
     this.renderPatternSelect();
 
     return this;
@@ -242,11 +381,15 @@ class Sequencer extends DisplayObject {
       this.patternSelect.parentNode.removeChild(this.patternSelect);
     };
 
-    this.patternSelect = makeSelect(this.saved.map(([label], index) => [label, index]), this.saved.length-1);
+    const saved = this.storage.get('patterns');
+
+    this.patternSelect = makeSelect(saved.map(([label], index) => [label, index]), saved.length-1);
 
     this.buttonsNode.appendChild(this.patternSelect);
 
-    this.patternSelect.addEventListener('input', this.patternChangeHandler.bind(this));
+    this.patternSelect.addEventListener('input', () => {
+      this.patternChangeHandler();
+    });
     this.patternChangeHandler();
 
     return this;
@@ -254,15 +397,12 @@ class Sequencer extends DisplayObject {
   };
   patternChangeHandler() {
 
-    this.bpmSelect.value = this.saved[this.patternSelect.value][1];
-    this.instruments = this.saved[this.patternSelect.value][2];
+    const saved = this.storage.get('patterns');
+    const pattern = saved[this.patternSelect.value];
+    this.bpmSelect.setValue(pattern[1]);
+    this.instruments = pattern[2].map((steps, index) => new Instrument(this.keys[index], steps));
+    this.sounds.mixer = toMixer(this.keys, pattern[3]);
     this.applyPattern();
-    this.bpmChangeHandler();
-
-  };
-  bpmChangeHandler() {
-
-    this.bpmDisplay.innerText = this.bpmSelect.value;
 
   };
   playing = false;
@@ -274,6 +414,11 @@ class Sequencer extends DisplayObject {
     '1/4': 60000
   };
   mode = '1/16';
+  presets = [
+    ["empty @120",120,[[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],[[0.5,0],[0.5,0],[0.5,0],[0.5,0],[0.5,0],[0.5,0]]],
+    ["bob @124",124,[[1,0,0,0,0,0,1,0,0,0,1,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0],[1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0]],[[0.5,0],[0.5,0],[0.5,0],[0.5,0],[0.5,0],[0.5,0]]],
+    ["eminem @120",120,[[1,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0],[0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0],[0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],[[0.5,0],[0.5,0],[0.5,0],[0.5,0],[0.5,0],[0.5,0]]]
+  ];
 };
 
 class Knob extends DisplayObject {
@@ -285,58 +430,13 @@ class Knob extends DisplayObject {
   label = 'Knob';
 };
 
-class LevelKnob extends Knob {
-  constructor() {
-    super();
-  };
-  label = 'Level';
-};
-
-class TuningKnob extends Knob {
-  constructor() {
-    super();
-  };
-  label = 'Tuning';
-};
-
-class ToneKnob extends Knob {
-  constructor() {
-    super();
-  };
-  label = 'Tone';
-};
-
-class DecayKnob extends Knob {
-  constructor() {
-    super();
-  };
-  label = 'Decay';
-};
-
-class SnappyKnob extends Knob {
-  constructor() {
-    super();
-  };
-  label = 'Snappy';
-};
-
-class Switch extends DisplayObject {
-  constructor() {
-    super();
-  };
-};
-
-class Variation extends DisplayObject {
-  constructor() {
-    super();
-  };
-};
-
 class Instrument {
-  constructor(name) {
+  constructor(name, steps = makeArray(16, () => 0)) {
+
     this.name = name;
+    this.steps = steps;
+
   };
-  play() {};
 };
 
 class Steps extends DisplayObject {
