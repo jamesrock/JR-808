@@ -218,7 +218,7 @@ class Sequencer extends DisplayObject {
     this.instrumentSelect = new Toggle(this.keys.map((inst, index) => [inst, index]), 'instrument', 0, 'instruments', 'Instrument');
 
     this.startButton = makeButton('start');
-    this.saveButton = makeButton('save');
+    this.saveButton = makeButton('store');
     this.tapButton = makeButton('tap');
     this.patternClearButton = makeButton('clear ptrn');
     this.instrumentClearButton = makeButton('clear inst');
@@ -289,6 +289,18 @@ class Sequencer extends DisplayObject {
 
     this.tapButton.addEventListener('click', () => {
       this.bpmSelect.setValue(tap(this.bpmSelect.getValue()));
+    });
+
+    this.patternClearButton.addEventListener('click', () => {
+      this.instruments.forEach((inst) => {
+        inst.clear();
+      });;
+      this.applyInstrument();
+    });
+
+    this.instrumentClearButton.addEventListener('click', () => {
+      this.instrument.clear();
+      this.applyInstrument();
     });
 
     if(!this.storage.get('patterns')) {
@@ -494,6 +506,11 @@ class Instrument {
 
     this.name = name;
     this.steps = steps;
+
+  };
+  clear() {
+
+    this.steps = makeArray(16, () => 0);
 
   };
 };
