@@ -423,15 +423,28 @@ class Sequencer extends DisplayObject {
   };
   save() {
 
-    let name = prompt('pattern name?');
-
-    if(!name) {return};
-
-    name += ` @${this.bpmSelect.getValue()}`;
     const existing = this.storage.get('patterns');
-    const saved = [...existing, [name, this.bpmSelect.getValue(), this.instruments.map((inst) => inst.steps), this.instruments.map((inst) => this.sounds.mixer[inst.name])]];
-    this.storage.set('patterns', saved);
-    this.renderPatternSelect();
+    const patternId = this.patternSelect.getValue();
+    const pattern = existing[patternId];
+    const overwrite = confirm(`overwrite pattern '${pattern[0]}'?`);
+
+    if(overwrite) {
+
+      existing[patternId] = this.getPatternData(pattern[0]);
+      this.storage.set('patterns', existing);
+
+    }
+    else {
+
+      const name = prompt('new pattern name?');
+
+      if(!name) {return};
+
+      const saved = [...existing, this.getPatternData(name)];
+      this.storage.set('patterns', saved);
+      this.renderPatternSelect();
+
+    };
 
     return this;
 
@@ -444,7 +457,7 @@ class Sequencer extends DisplayObject {
 
     const saved = this.storage.get('patterns');
 
-    this.patternSelect = new Toggle(saved.map(([label], index) => [label, index]), 'pattern', saved.length-1, 'patterns', 'Pattern');
+    this.patternSelect = new Toggle(saved.map(([label, bpm], index) => [`${label} @${bpm}`, index]), 'pattern', saved.length-1, 'patterns', 'Pattern');
     this.patternSelect.appendTo(this.patternsNode);
     this.patternSelect.scrollToBottom();
     this.patternSelect.addEventListener('input', () => {
@@ -484,6 +497,11 @@ class Sequencer extends DisplayObject {
     return this;
 
   };
+  getPatternData(name) {
+
+    return [name, this.bpmSelect.getValue(), this.instruments.map((inst) => inst.steps), this.instruments.map((inst) => this.sounds.mixer[inst.name])]
+
+  };
   playing = false;
   patternLength = 16;
   currentStep = 0;
@@ -495,9 +513,9 @@ class Sequencer extends DisplayObject {
   };
   mode = '1/16';
   presets = [
-    ["empty @120",120,[[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],[[0.5,0],[0.5,0],[0.5,0],[0.5,0],[0.5,0],[0.5,0]]],
-    ["bob @120",120,[[1,0,0,0,0,0,1,0,0,0,1,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0],[1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0]],[[0.5,0],[0.5,0],[0.5,0],[0.5,0],[0.5,0],[0.5,0]]],
-    ["eminem @120",120,[[1,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0],[0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0],[0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],[[0.5,0],[0.5,0],[0.5,0],[0.5,0],[0.5,0],[0.5,0]]]
+    ["empty",120,[[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],[[0.5,0],[0.5,0],[0.5,0],[0.5,0],[0.5,0],[0.5,0]]],
+    ["bob",120,[[1,0,0,0,0,0,1,0,0,0,1,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0],[1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0]],[[0.5,0],[0.5,0],[0.5,0],[0.5,0],[0.5,0],[0.5,0]]],
+    ["eminem",120,[[1,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0],[0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0],[0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],[[0.5,0],[0.5,0],[0.5,0],[0.5,0],[0.5,0],[0.5,0]]]
   ];
 };
 
