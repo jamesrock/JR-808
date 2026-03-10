@@ -16,6 +16,33 @@ import {
 
 setDocumentHeight();
 
+let taps = [];
+
+const tap = (base) => {
+
+  const now = performance.now();
+  taps.push(now);
+
+  if(taps.length > 1 && now - taps[taps.length - 2] > 2000) {
+    taps = [now];
+    return base;
+  };
+
+  if(taps.length < 2) return base;
+
+  if(taps.length > 10) taps.shift();
+
+  const intervals = [];
+  for(let i = 1; i < taps.length; i++) {
+    intervals.push(taps[i] - taps[i - 1]);
+  };
+
+  const averageInterval = intervals.reduce((a, b) => a + b) / intervals.length;
+
+  return floorTo(60000 / averageInterval);
+
+};
+
 const makeSlider = (value, min, max, step = 1) => {
   const node = makeInput(0, 'range');
   node.min = min;
@@ -190,6 +217,7 @@ class Sequencer extends DisplayObject {
 
     this.startButton = makeButton('start');
     this.saveButton = makeButton('save');
+    this.tapButton = makeButton('tap');
     this.bpmSelect = new Slider('BPM', 120, 60, 180, 2);
     this.panningSelect = new Slider('PAN', 0, -1, 1, 0.1, (value) => getXAsPercentOfY(value, 1));
     this.volumeSelect = new Slider('LEVEL', 0.5, 0, 1, 0.05, (value) => floorTo(getXAsPercentOfY(value, 1)));
@@ -203,8 +231,9 @@ class Sequencer extends DisplayObject {
     this.volumeSelect.appendTo(this.slidersNode);
     this.panningSelect.appendTo(this.slidersNode);
     this.bpmSelect.appendTo(this.slidersNode);
-    this.buttonsNode.appendChild(this.startButton);
+    this.buttonsNode.appendChild(this.tapButton);
     this.buttonsNode.appendChild(this.saveButton);
+    this.buttonsNode.appendChild(this.startButton);
     this.instrumentSelect.appendTo(this.controllersLeftNode);
     this.controllersLeftNode.appendChild(this.slidersNode);
     this.controllersRightNode.appendChild(this.patternsNode);
@@ -246,6 +275,10 @@ class Sequencer extends DisplayObject {
       this.sounds.volume(this.instrument.name, Number(this.volumeSelect.getValue()));
     });
 
+    this.tapButton.addEventListener('click', () => {
+      this.bpmSelect.setValue(tap(this.bpmSelect.getValue()));
+    });
+
     if(!this.storage.get('patterns')) {
       this.applyPresets();
     };
@@ -280,6 +313,7 @@ class Sequencer extends DisplayObject {
     if(this.queued && this.currentStep === (this.steps.count - 1)) {
       this.patternChangeHandler(true);
       this.queued = false;
+      this.setProp('queued', this.queued);
     };
 
     if(this.currentStep===(this.steps.count - 1)) {
@@ -401,6 +435,7 @@ class Sequencer extends DisplayObject {
 
     if(!force && this.playing) {
       this.queued = true;
+      this.setProp('queued', this.queued);
       return;
     };
 

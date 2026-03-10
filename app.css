@@ -35,6 +35,11 @@
   --foreground: #DDD;
 }
 
+@keyframes blink {
+  from {background-color: black;}
+  to {background-color: red;}
+}
+
 * {
   padding: 0;
   margin: 0;
@@ -233,10 +238,15 @@ button {
 
 }
 
+[data-queued="true"] input[type="radio"]:checked:before {
+  animation: blink .45s infinite;
+  animation-direction: alternate-reverse;
+}
+
 .buttons {
   display: flex;
-  flex-direction: column-reverse;
-  gap: 10px;
+  flex-direction: column;
+  gap: 5px;
   align-items: center;
 
   button {
@@ -302,7 +312,6 @@ button {
   @media (max-width: 400px) {
     flex-direction: column;
     width: 100%;
-    gap: 50px;
   }
 
 }
