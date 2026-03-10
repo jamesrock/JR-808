@@ -56,11 +56,16 @@ body {
   font-size: 15px;
   font-weight: 600;
   padding: 50px;
+  height: 100%;
+  box-sizing: border-box;
+  display: flex;
+  justify-content: end;
+  flex-direction: column;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 
   @media (max-width: 400px) {
-    padding: 40px 30px 30px;
+    padding: 60px 30px 40px;
   }
 
 }
@@ -74,12 +79,7 @@ a {
   display: flex;
   flex-direction: column;
   align-items: start;
-  gap: 20px;
-
-  @media (max-width: 400px) {
-    gap: 40px;
-  }
-
+  gap: 30px;
 }
 
 .steps {
@@ -238,19 +238,24 @@ button {
 
 }
 
-[data-queued="true"] input[type="radio"]:checked:before {
+[data-queued="true"] .patterns .toggle input[type="radio"]:checked:before {
   animation: blink .45s infinite;
   animation-direction: alternate-reverse;
 }
 
 .buttons {
   display: flex;
+  gap: 5px;
+}
+
+.buttons-left,
+.buttons-right {
+  display: flex;
   flex-direction: column;
   gap: 5px;
-  align-items: center;
 
   button {
-    padding: 10px 15px;
+    padding: 15px 15px;
     background-color: var(--red);
     color: var(--foreground);
     border-radius: 5px;
@@ -258,7 +263,11 @@ button {
     text-transform: uppercase;
     border: 0;
     cursor: pointer;
-    width: 90px;
+    width: 80px;
+    font-size: 14px;
+    line-height: 1;
+    text-align: center;
+    flex-grow: 1;
   }
 }
 
@@ -312,6 +321,7 @@ button {
   @media (max-width: 400px) {
     flex-direction: column;
     width: 100%;
+    gap: 20px;
   }
 
 }
@@ -319,7 +329,6 @@ button {
 .controllers-left,
 .controllers-right {
   display: flex;
-  gap: 40px;
   align-items: end;
 
   @media (max-width: 400px) {
@@ -343,10 +352,13 @@ button {
 }
 
 .patterns {
+  padding-bottom: 40px;
 
   .toggle {
     max-height: 120px;
+    max-width: 150px;
     overflow-y: scroll;
+    overflow-x: hidden;
     padding-right: 12px;
   }
 

@@ -207,6 +207,8 @@ class Sequencer extends DisplayObject {
       'hats-open': '/audio/hats-open.mp3',
       'clap': '/audio/clap.mp3',
       'clave': '/audio/clave.mp3',
+      // 'tom-low': '',
+      // 'tom-high': '',
       // 'crash': '',
       // 'ride': '',
     });
@@ -218,6 +220,8 @@ class Sequencer extends DisplayObject {
     this.startButton = makeButton('start');
     this.saveButton = makeButton('save');
     this.tapButton = makeButton('tap');
+    this.patternClearButton = makeButton('clear ptrn');
+    this.instrumentClearButton = makeButton('clear inst');
     this.bpmSelect = new Slider('BPM', 120, 60, 180, 2);
     this.panningSelect = new Slider('PAN', 0, -1, 1, 0.1, (value) => getXAsPercentOfY(value, 1));
     this.volumeSelect = new Slider('LEVEL', 0.5, 0, 1, 0.05, (value) => floorTo(getXAsPercentOfY(value, 1)));
@@ -225,20 +229,28 @@ class Sequencer extends DisplayObject {
     this.controllersLeftNode = makeNode('div', 'controllers-left');
     this.controllersRightNode = makeNode('div', 'controllers-right');
     this.buttonsNode = makeNode('div', 'buttons');
+    this.buttonsLeftNode = makeNode('div', 'buttons-left');
+    this.buttonsRightNode = makeNode('div', 'buttons-right');
     this.slidersNode = makeNode('div', 'sliders');
     this.patternsNode = makeNode('div', 'patterns-target');
 
     this.volumeSelect.appendTo(this.slidersNode);
     this.panningSelect.appendTo(this.slidersNode);
     this.bpmSelect.appendTo(this.slidersNode);
-    this.buttonsNode.appendChild(this.tapButton);
-    this.buttonsNode.appendChild(this.saveButton);
-    this.buttonsNode.appendChild(this.startButton);
-    this.instrumentSelect.appendTo(this.controllersLeftNode);
-    this.controllersLeftNode.appendChild(this.slidersNode);
-    this.controllersRightNode.appendChild(this.patternsNode);
-    this.controllersRightNode.appendChild(this.buttonsNode);
 
+    this.buttonsLeftNode.appendChild(this.patternClearButton);
+    this.buttonsLeftNode.appendChild(this.instrumentClearButton);
+
+    this.buttonsRightNode.appendChild(this.tapButton);
+    this.buttonsRightNode.appendChild(this.saveButton);
+    this.buttonsRightNode.appendChild(this.startButton);
+    this.controllersLeftNode.appendChild(this.patternsNode);
+    this.controllersLeftNode.appendChild(this.slidersNode);
+    this.instrumentSelect.appendTo(this.controllersRightNode);
+
+    this.buttonsNode.appendChild(this.buttonsLeftNode);
+    this.buttonsNode.appendChild(this.buttonsRightNode);
+    this.controllersRightNode.appendChild(this.buttonsNode);
     this.controllersNode.appendChild(this.controllersLeftNode);
     this.controllersNode.appendChild(this.controllersRightNode);
 
