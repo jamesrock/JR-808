@@ -3,6 +3,7 @@ import {
   Storage,
   // SoundManager,
   DisplayObject,
+  setDocumentHeight,
   makeArray,
   makeInput,
   makeButton,
@@ -12,6 +13,8 @@ import {
   floorTo,
   isTiny
 } from '@jamesrock/rockjs';
+
+setDocumentHeight();
 
 const makeSlider = (value, min, max, step = 1) => {
   const node = makeInput(0, 'range');
