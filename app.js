@@ -227,15 +227,16 @@ class Sequencer extends DisplayObject {
     });
 
     this.instrumentSelect.addEventListener('input', () => {
+      this.instrument = this.instruments[this.instrumentSelect.getValue()];
       this.applyInstrument();
     });
 
     this.panningSelect.addEventListener('input', () => {
-      this.sounds.pan(this.keys[this.instrumentSelect.getValue()], Number(this.panningSelect.getValue()));
+      this.sounds.pan(this.instrument.name, Number(this.panningSelect.getValue()));
     });
 
     this.volumeSelect.addEventListener('input', () => {
-      this.sounds.volume(this.keys[this.instrumentSelect.getValue()], Number(this.volumeSelect.getValue()));
+      this.sounds.volume(this.instrument.name, Number(this.volumeSelect.getValue()));
     });
 
     if(!this.storage.get('patterns')) {
@@ -288,6 +289,16 @@ class Sequencer extends DisplayObject {
     return this;
 
   };
+  stop() {
+
+    this.playing = false;
+    this.currentStep = 0;
+    this.steps.clear();
+
+    clearTimeout(this.timer);
+    return this;
+
+  };
   play(beat) {
 
     this.instruments.forEach((inst) => {
@@ -299,24 +310,14 @@ class Sequencer extends DisplayObject {
     return this;
 
   };
-  stop() {
-
-    this.playing = false;
-    this.currentStep = 0;
-    this.steps.clear();
-
-    clearTimeout(this.timer);
-    return this;
-
-  };
   enable(beat) {
 
-    this.instruments[this.instrumentSelect.getValue()].steps[beat] = 1;
+    this.instrument.steps[beat] = 1;
 
   };
   disable(beat) {
 
-    this.instruments[this.instrumentSelect.getValue()].steps[beat] = 0;
+    this.instrument.steps[beat] = 0;
 
   };
   setupChannelStrips() {
@@ -355,9 +356,9 @@ class Sequencer extends DisplayObject {
     ];
 
   };
-  save(override) {
+  save() {
 
-    let name = override ? override : prompt('name?');
+    let name = prompt('pattern name?');
 
     if(!name) {return};
 
@@ -402,21 +403,15 @@ class Sequencer extends DisplayObject {
     this.bpmSelect.setValue(pattern[1]);
     this.instruments = pattern[2].map((steps, index) => new Instrument(this.keys[index], steps));
     this.sounds.mixer = toMixer(this.keys, pattern[3]);
+    this.instrument = this.instruments[this.instrumentSelect.getValue()];
     this.applyInstrument();
 
   };
   applyInstrument() {
 
-    this.steps.steps.forEach((step, index) => {
-      if(this.instruments[this.instrumentSelect.getValue()].steps[index]) {
-        step.enable();
-      }
-      else {
-        step.disable();
-      };
-    });
+    this.steps.applyInstrument();
 
-    const channel = this.sounds.mixer[this.keys[this.instrumentSelect.getValue()]];
+    const channel = this.sounds.mixer[this.instrument.name];
 
     this.volumeSelect.setValue(channel[0]);
     this.panningSelect.setValue(channel[1]);
@@ -425,7 +420,7 @@ class Sequencer extends DisplayObject {
 
   };
   playing = false;
-  stepLength = 16;
+  patternLength = 16;
   currentStep = 0;
   queued = false;
   modes = {
@@ -436,18 +431,9 @@ class Sequencer extends DisplayObject {
   mode = '1/16';
   presets = [
     ["empty @120",120,[[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],[[0.5,0],[0.5,0],[0.5,0],[0.5,0],[0.5,0],[0.5,0]]],
-    ["bob @124",124,[[1,0,0,0,0,0,1,0,0,0,1,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0],[1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0]],[[0.5,0],[0.5,0],[0.5,0],[0.5,0],[0.5,0],[0.5,0]]],
+    ["bob @120",120,[[1,0,0,0,0,0,1,0,0,0,1,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0],[1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0]],[[0.5,0],[0.5,0],[0.5,0],[0.5,0],[0.5,0],[0.5,0]]],
     ["eminem @120",120,[[1,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0],[0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0],[0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],[[0.5,0],[0.5,0],[0.5,0],[0.5,0],[0.5,0],[0.5,0]]]
   ];
-};
-
-class Knob extends DisplayObject {
-  constructor() {
-
-    super();
-
-  };
-  label = 'Knob';
 };
 
 class Instrument {
@@ -503,6 +489,20 @@ class Steps extends DisplayObject {
     return this;
 
   };
+  applyInstrument() {
+
+    this.steps.forEach((step, index) => {
+      if(this.seq.instrument.steps[index]) {
+        step.enable(true);
+      }
+      else {
+        step.disable(true);
+      };
+    });
+
+    return this;
+
+  };
   stepColors = ['red', 'orange', 'yellow', 'white'];
 };
 
@@ -523,12 +523,7 @@ class Step extends DisplayObject {
     this.setProp('color', this.color);
 
     this.addEventListener('click', () => {
-      if(this.enabled) {
-        this.disable();
-      }
-      else {
-        this.enable();
-      };
+      this.toggle();
     });
 
   };
@@ -546,19 +541,34 @@ class Step extends DisplayObject {
     return this;
 
   };
-  enable() {
+  enable(soft = false) {
 
     this.enabled = true;
     this.setProp('enabled', this.enabled);
-    this.seq.enable(this.beat);
+    if(!soft) {
+      this.seq.enable(this.beat);
+    };
     return this;
 
   };
-  disable() {
+  disable(soft = false) {
 
     this.enabled = false;
     this.setProp('enabled', this.enabled);
-    this.seq.disable(this.beat);
+    if(!soft) {
+      this.seq.disable(this.beat);
+    };
+    return this;
+
+  };
+  toggle() {
+
+    if(this.enabled) {
+      this.disable();
+    }
+    else {
+      this.enable();
+    };
     return this;
 
   };
