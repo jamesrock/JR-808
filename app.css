@@ -57,7 +57,7 @@ body {
   -moz-osx-font-smoothing: grayscale;
 
   @media (max-width: 400px) {
-    padding: 30px;
+    padding: 40px 30px 30px;
   }
 
 }
@@ -191,6 +191,7 @@ button {
 .toggle {
   display: flex;
   flex-direction: column;
+  gap: 1px;
 
   .toggle-item {
     display: flex;
@@ -200,6 +201,7 @@ button {
 
   label {
     cursor: pointer;
+    text-wrap: nowrap;
   }
 
   input[type="radio"] {
@@ -243,18 +245,13 @@ button {
     padding: 10px 15px;
     background-color: var(--red);
     color: var(--foreground);
-    border-radius: 2px;
+    border-radius: 5px;
     font-weight: 700;
     text-transform: uppercase;
     border: 0;
     cursor: pointer;
     width: 90px;
   }
-}
-
-input[type="range"] {
-  writing-mode: vertical-lr;
-  direction: rtl;
 }
 
 .sliders {
@@ -264,9 +261,24 @@ input[type="range"] {
   .slider {
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    align-items: center;
     gap: 10px;
     width: 40px;
+
+    input[type="range"] {
+      writing-mode: vertical-lr;
+      direction: rtl;
+      appearance: none;
+      width: 5px;
+      background-color: black;
+      &::-webkit-slider-thumb {
+        appearance: none;
+        width: 20px;
+        height: 20px;
+        background-color: white;
+        border-radius: 100%;
+      }
+    }
 
     .slider-display {
       text-align: center;
@@ -321,4 +333,14 @@ input[type="range"] {
     letter-spacing: 0.25px;
     font-weight: 800;
   }
+}
+
+.patterns {
+
+  .toggle {
+    max-height: 120px;
+    overflow-y: scroll;
+    padding-right: 12px;
+  }
+
 }

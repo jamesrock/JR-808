@@ -188,7 +188,7 @@ class Sequencer extends DisplayObject {
     this.controllersRightNode = makeNode('div', 'controllers-right');
     this.buttonsNode = makeNode('div', 'buttons');
     this.slidersNode = makeNode('div', 'sliders');
-    this.patternsNode = makeNode('div', 'patterns');
+    this.patternsNode = makeNode('div', 'patterns-target');
 
     this.volumeSelect.appendTo(this.slidersNode);
     this.panningSelect.appendTo(this.slidersNode);
@@ -224,7 +224,7 @@ class Sequencer extends DisplayObject {
     });
 
     this.instrumentSelect.addEventListener('input', () => {
-      this.applyPattern();
+      this.applyInstrument();
     });
 
     this.panningSelect.addEventListener('input', () => {
@@ -399,10 +399,10 @@ class Sequencer extends DisplayObject {
     this.bpmSelect.setValue(pattern[1]);
     this.instruments = pattern[2].map((steps, index) => new Instrument(this.keys[index], steps));
     this.sounds.mixer = toMixer(this.keys, pattern[3]);
-    this.applyPattern();
+    this.applyInstrument();
 
   };
-  applyPattern() {
+  applyInstrument() {
 
     this.steps.steps.forEach((step, index) => {
       if(this.instruments[this.instrumentSelect.getValue()].steps[index]) {
