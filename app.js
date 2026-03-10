@@ -103,8 +103,9 @@ class Toggle extends DisplayObject {
     this.node = makeNode('form', className);
     this.name = name;
     this.title = title;
+    this.toggle = makeToggle(items, name, value);
 
-    this.node.appendChild(makeToggle(items, name, value));
+    this.node.appendChild(this.toggle);
 
     this.setProp('title', title);
 
@@ -113,6 +114,12 @@ class Toggle extends DisplayObject {
 
     const data = new FormData(this.node);
     return data.get(this.name);
+
+  };
+  scrollToBottom() {
+
+    this.toggle.scrollTop = this.toggle.scrollHeight;
+    return this;
 
   };
 };
@@ -380,9 +387,8 @@ class Sequencer extends DisplayObject {
     const saved = this.storage.get('patterns');
 
     this.patternSelect = new Toggle(saved.map(([label], index) => [label, index]), 'pattern', saved.length-1, 'patterns', 'Pattern');
-
     this.patternSelect.appendTo(this.patternsNode);
-
+    this.patternSelect.scrollToBottom();
     this.patternSelect.addEventListener('input', () => {
       this.patternChangeHandler();
     });
