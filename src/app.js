@@ -145,7 +145,7 @@ class Toggle extends DisplayObject {
   getValue() {
 
     const data = new FormData(this.node);
-    return data.get(this.name);
+    return Number(data.get(this.name));
 
   };
   scrollToBottom() {
@@ -179,7 +179,7 @@ class Slider extends DisplayObject {
   };
   getValue() {
 
-    return this.slider.value;
+    return Number(this.slider.value);
 
   };
   setValue(value) {
@@ -301,11 +301,11 @@ class Sequencer extends DisplayObject {
     });
 
     this.panningSelect.addEventListener('input', () => {
-      this.sounds.pan(this.instrument.name, Number(this.panningSelect.getValue()));
+      this.sounds.pan(this.instrument.name, this.panningSelect.getValue());
     });
 
     this.volumeSelect.addEventListener('input', () => {
-      this.sounds.volume(this.instrument.name, Number(this.volumeSelect.getValue()));
+      this.sounds.volume(this.instrument.name, this.volumeSelect.getValue());
     });
 
     this.patternsNode.addEventListener('input', () => {
@@ -394,6 +394,8 @@ class Sequencer extends DisplayObject {
       this.storage.set('patterns', saved);
 
     });
+
+    this.storage.set('pattern', this.presets.length - 1);
 
     return this;
 
@@ -543,8 +545,9 @@ class Sequencer extends DisplayObject {
     };
 
     const saved = this.storage.get('patterns');
+    const patternId = this.storage.get('pattern');
 
-    this.patternSelect = new Toggle(saved.map(([name, bpm], index) => [`${limit(name)} ${bpm}`, index]), 'pattern', saved.length-1, 'patterns', 'Pattern');
+    this.patternSelect = new Toggle(saved.map(([name, bpm], index) => [`${limit(name)} ${bpm}`, index]), 'pattern', patternId, 'patterns', 'Pattern');
     this.patternSelect.appendTo(this.patternsNode);
     this.patternSelect.scrollToBottom();
     this.patternChangeHandler();
@@ -561,7 +564,8 @@ class Sequencer extends DisplayObject {
     };
 
     const saved = this.storage.get('patterns');
-    const pattern = saved[this.patternSelect.getValue()];
+    const patternId = this.patternSelect.getValue();
+    const pattern = saved[patternId];
     this.bpmSelect.setValue(pattern[1]);
     this.instruments = pattern[2].map((steps, index) => new Instrument(this.keys[index], steps));
     this.sounds.mixer = toMixer(this.keys, pattern[3]);
@@ -569,6 +573,7 @@ class Sequencer extends DisplayObject {
     this.part = 0;
     this.parts = this.instrument.steps.length/16;
     this.steps.setPart(0);
+    this.storage.set('pattern', patternId);
     this.applyInstrument();
     this.toggleButtons();
 
