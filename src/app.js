@@ -413,8 +413,14 @@ class Sequencer extends DisplayObject {
 
     this.play(this.currentStep);
 
-    this.partAddButton.innerText = ceilTo((this.currentStep+1)/16);
     this.toggleButtons();
+
+    if(this.currentStep % 16 === 0) {
+      const part = ceilTo((this.currentStep+1)/16);
+      this.steps.setPart(part-1);
+      this.part = part-1;
+      this.partAddButton.innerText = part;
+    };
 
     if(this.currentStep === (this.instrument.steps.length - 1)) {
       this.currentStep = 0;
@@ -695,7 +701,6 @@ class Steps extends DisplayObject {
     this.count = count;
     this.steps = this.make();
 
-    this.setPart(0);
     this.render();
 
   };
@@ -705,10 +710,10 @@ class Steps extends DisplayObject {
 
     return makeArray(this.count).map((index) => {
       const step = new Step(this.seq, this.stepColors[colorIndex], index, this.part);
-      if(index > 0 && (index + 1) % 4 === 0) {
+      if((index + 1) % 4 === 0) {
         colorIndex += 1;
       };
-      if(index > 0 && (index + 1) % 16 === 0) {
+      if((index + 1) % 16 === 0) {
         this.part += 1;
         colorIndex = 0;
       };
@@ -784,6 +789,7 @@ class Step extends DisplayObject {
     this.beat = beat;
     this.seq = seq;
     this.part = part;
+    this.visible = this.part===this.seq.part;
 
     this.node.appendChild(this.indicator);
 
@@ -857,7 +863,7 @@ class Step extends DisplayObject {
   };
   enabled = false;
   active = false;
-  visible = true;
+  visible = false;
 };
 
 class Channel {
