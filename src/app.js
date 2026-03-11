@@ -317,15 +317,28 @@ class Sequencer extends DisplayObject {
     });
 
     this.patternClearButton.addEventListener('click', () => {
+
+      if(!confirm('clear pattern?')) {
+        return;
+      };
+
       this.instruments.forEach((inst) => {
         inst.clear();
       });
+
       this.applyInstrument();
+
     });
 
     this.instrumentClearButton.addEventListener('click', () => {
+
+      if(!confirm('clear instrument?')) {
+        return;
+      };
+
       this.instrument.clear();
       this.applyInstrument();
+
     });
 
     this.partPrevButton.addEventListener('click', () => {
