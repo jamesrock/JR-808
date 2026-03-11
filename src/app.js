@@ -875,6 +875,8 @@ sequencer.appendTo(document.body);
 
 if(isTiny) {
   const gap = 5;
+  const padSize = (((window.innerWidth - (25*2)) - (gap*3)) / 4);
   document.documentElement.style.setProperty('--gap', `${gap}px`);
-  document.documentElement.style.setProperty('--pad-size', `${((window.innerWidth - (25*2)) - (gap*3)) / 4}px`);
+  document.documentElement.style.setProperty('--pad-size', `${padSize}px`);
+  document.documentElement.style.setProperty('--sliders-size', `${(padSize*2) + gap}px`);
 };

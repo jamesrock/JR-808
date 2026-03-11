@@ -278,6 +278,8 @@ a {
 .sliders {
   display: flex;
   gap: 10px;
+  width: var(--sliders-size);
+  justify-content: center;
 
   .slider {
     display: flex;
