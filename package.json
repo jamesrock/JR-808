@@ -6,15 +6,20 @@
     "dev": "vite",
     "host": "vite --host",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "sync": "npm run build && npx cap sync",
+    "open": "npx cap open ios"
   },
   "author": "James Rock",
   "license": "ISC",
   "dependencies": {
+    "@capacitor/core": "latest",
+    "@capacitor/ios": "latest",
     "@jamesrock/rockjs": "^1.34.0",
     "tone": "^15.0.4"
   },
   "devDependencies": {
-    "vite": "^7.3.1"
+    "vite": "^7.3.1",
+    "@capacitor/cli": "latest"
   }
 }
