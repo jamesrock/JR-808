@@ -533,21 +533,19 @@ class Sequencer extends DisplayObject {
 
     };
 
-    this.renderPatternSelect();
+    this.renderPatternSelect(true);
 
     return this;
 
   };
-  renderPatternSelect() {
+  renderPatternSelect(refresh = false) {
 
     if(this.patternSelect) {
       this.patternSelect.destroy();
     };
 
     const saved = this.storage.get('patterns');
-    const patternId = this.storage.get('pattern');
-
-    this.patternSelect = new Toggle(saved.map(([name, bpm], index) => [`${limit(name)} ${bpm}`, index]), 'pattern', patternId, 'patterns', 'Pattern');
+    this.patternSelect = new Toggle(saved.map(([name, bpm], index) => [`${limit(name)} ${bpm}`, index]), 'pattern', refresh ? (saved.length - 1) : this.storage.get('pattern'), 'patterns', 'Pattern');
     this.patternSelect.appendTo(this.patternsNode);
     this.patternSelect.scrollToBottom();
     this.patternChangeHandler();
