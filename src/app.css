@@ -112,7 +112,7 @@ a {
   padding-top: 12px;
   box-sizing: border-box;
   cursor: pointer;
-  border: solid 2px var(--background);
+  border: solid 1px black;
   border-radius: 8px;
 
   @media (max-width: 400px) {
@@ -222,19 +222,20 @@ a {
   button {
     font-family: inherit;
     font-size: 13px;
-    padding: 15px;
+    padding: 14px;
     background-color: var(--red);
     color: white;
     border-radius: 5px;
     font-weight: 700;
     text-transform: uppercase;
-    border: 0;
+    border: solid 1px black;
     cursor: pointer;
     width: var(--pad-size);
     line-height: 1;
     text-align: center;
     flex-grow: 1;
     text-shadow: 0 0 5px rgba(0,0,0,0.25);
+    background-image: radial-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.2));
     &:active {
       color: var(--yellow);
     }
@@ -243,7 +244,7 @@ a {
   .buttons-top {
     button {
       width: auto;
-      padding: 7px 15px;
+      padding: 8px 15px;
       color: var(--yellow);
 
       &[disabled] {
@@ -364,7 +365,6 @@ a {
 
   .toggle {
     max-height: 120px;
-    /*max-width: 150px;*/
     overflow-y: scroll;
     overflow-x: hidden;
     padding-right: 12px;

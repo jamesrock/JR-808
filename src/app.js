@@ -225,8 +225,8 @@ class Sequencer extends DisplayObject {
     this.startButton = makeButton('start');
     this.saveButton = makeButton('store');
     this.tapButton = makeButton('tap');
-    this.patternClearButton = makeButton('clear ptrn');
-    this.instrumentClearButton = makeButton('clear inst');
+    this.patternClearButton = makeButton('clear ptrn', 'clear');
+    this.instrumentClearButton = makeButton('clear inst', 'clear');
     this.partPrevButton = makeButton('<', 'dir');
     this.partAddButton = makeButton('+16', 'add');
     this.partNextButton = makeButton('>', 'dir');
@@ -874,7 +874,7 @@ console.log(sequencer);
 sequencer.appendTo(document.body);
 
 if(isTiny) {
-  const gap = 5;
+  const gap = 4;
   const padSize = (((window.innerWidth - (25*2)) - (gap*3)) / 4);
   document.documentElement.style.setProperty('--gap', `${gap}px`);
   document.documentElement.style.setProperty('--pad-size', `${padSize}px`);
