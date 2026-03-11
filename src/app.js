@@ -385,8 +385,7 @@ class Sequencer extends DisplayObject {
       this.setProp('queued', this.queued);
     };
 
-    this.steps.clear();
-    this.steps.steps[this.currentStep].flash();
+    this.steps.flash(this.currentStep);
 
     this.play(this.currentStep);
 
@@ -677,6 +676,13 @@ class Steps extends DisplayObject {
       step.unflash();
     });
 
+    return this;
+
+  };
+  flash(index) {
+
+    this.clear();
+    this.steps[index].flash();
     return this;
 
   };
