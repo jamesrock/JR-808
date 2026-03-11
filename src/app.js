@@ -332,6 +332,7 @@ class Sequencer extends DisplayObject {
       this.part --;
       this.steps.setPart(this.part);
       this.toggleButtons();
+      this.flashPart();
 
     });
 
@@ -355,6 +356,7 @@ class Sequencer extends DisplayObject {
       this.part ++;
       this.steps.setPart(this.part);
       this.toggleButtons();
+      this.flashPart();
 
     });
 
@@ -563,6 +565,10 @@ class Sequencer extends DisplayObject {
   };
   toggleButtons() {
 
+    this.partPrevButton.disabled = false;
+    this.partAddButton.disabled = false;
+    this.partNextButton.disabled = false;
+
     if(this.parts===1) {
       // can't move either way
       this.partPrevButton.disabled = true;
@@ -596,6 +602,19 @@ class Sequencer extends DisplayObject {
     return this;
 
   };
+  flashPart() {
+
+    this.partAddButton.innerText = (this.part + 1);
+
+    clearTimeout(this.flashTimeout);
+
+    this.flashTimeout = setTimeout(() => {
+      this.partAddButton.innerText = '+16';
+    }, 1000);
+
+    return this;
+
+  };
   playing = false;
   currentStep = 0;
   queued = false;
@@ -614,6 +633,7 @@ class Sequencer extends DisplayObject {
   ];
   part = 0;
   parts = 1;
+  flashTimeout = 0;
 };
 
 class Instrument {

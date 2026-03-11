@@ -166,6 +166,7 @@ a {
   label {
     cursor: pointer;
     text-wrap: nowrap;
+    transition: color .2s;
   }
 
   input[type="radio"] {
@@ -225,21 +226,26 @@ a {
     line-height: 1;
     text-align: center;
     flex-grow: 1;
-    &[disabled] {
-      opacity: 0.6;
-      pointer-events: none;
-    }
+    transition: color .2s;
+    text-shadow: 0 0 5px rgba(0,0,0,0.25);
   }
 
   .buttons-top {
     button {
       width: auto;
       padding: 7px 15px;
+      color: var(--yellow);
+
+      &[disabled] {
+        pointer-events: none;
+        color: var(--white);
+      }
       &.dir {
         font-size: 20px;
       }
       &.add {
         font-size: 15px;
+        width: 60px;
       }
     }
   }
