@@ -232,7 +232,7 @@ class Sequencer extends DisplayObject {
     this.partNextButton = makeButton('>', 'dir');
     this.bpmSelect = new Slider('BPM', 120, 60, 180, 2);
     this.panningSelect = new Slider('PAN', 0, -1, 1, 0.1, (value) => getXAsPercentOfY(value, 1));
-    this.volumeSelect = new Slider('LEVEL', 0.5, 0, 1, 0.05, (value) => floorTo(getXAsPercentOfY(value, 1)));
+    this.volumeSelect = new Slider('LEVEL', 0.5, 0, 1, 0.1, (value) => floorTo(getXAsPercentOfY(value, 1)));
     this.controllersNode = makeNode('div', 'controllers');
     this.controllersLeftNode = makeNode('div', 'controllers-left');
     this.controllersRightNode = makeNode('div', 'controllers-right');
