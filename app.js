@@ -329,7 +329,6 @@ class Sequencer extends DisplayObject {
 
     this.partAddButton.addEventListener('click', () => {
 
-      this.steps.addPart();
       this.instruments.forEach((inst) => {
         inst.addPart();
       });
@@ -379,16 +378,17 @@ class Sequencer extends DisplayObject {
 
     this.playing = true;
 
+    if(this.queued && this.currentStep === 0) {
+      this.queued = false;
+      this.stop();
+      this.patternChangeHandler();
+      this.setProp('queued', this.queued);
+    };
+
     this.steps.clear();
     this.steps.steps[this.currentStep].flash();
 
     this.play(this.currentStep);
-
-    if(this.queued && this.currentStep === (this.patternLength - 1)) {
-      this.patternChangeHandler(true);
-      this.queued = false;
-      this.setProp('queued', this.queued);
-    };
 
     if(this.currentStep === (this.patternLength - 1)) {
       this.currentStep = 0;
@@ -519,9 +519,9 @@ class Sequencer extends DisplayObject {
     return this;
 
   };
-  patternChangeHandler(force = false) {
+  patternChangeHandler() {
 
-    if(!force && this.playing) {
+    if(this.playing && !this.queued) {
       this.queued = true;
       this.setProp('queued', this.queued);
       return;
