@@ -136,6 +136,7 @@ class Toggle extends DisplayObject {
     this.name = name;
     this.title = title;
     this.toggle = makeToggle(items, name, value);
+    this.value = value;
 
     this.node.appendChild(this.toggle);
 
@@ -148,9 +149,9 @@ class Toggle extends DisplayObject {
     return Number(data.get(this.name));
 
   };
-  scrollToBottom() {
+  scrollIntoView() {
 
-    this.toggle.scrollTop = this.toggle.scrollHeight;
+    this.toggle.querySelector(`input[value="${this.value}"]`).scrollIntoView();
     return this;
 
   };
@@ -547,7 +548,7 @@ class Sequencer extends DisplayObject {
     const saved = this.storage.get('patterns');
     this.patternSelect = new Toggle(saved.map(([name, bpm], index) => [`${limit(name)} ${bpm}`, index]), 'pattern', refresh ? (saved.length - 1) : this.storage.get('pattern'), 'patterns', 'Pattern');
     this.patternSelect.appendTo(this.patternsNode);
-    this.patternSelect.scrollToBottom();
+    this.patternSelect.scrollIntoView();
     this.patternChangeHandler();
 
     return this;
