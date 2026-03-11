@@ -222,6 +222,9 @@ class Sequencer extends DisplayObject {
     this.tapButton = makeButton('tap');
     this.patternClearButton = makeButton('clear ptrn');
     this.instrumentClearButton = makeButton('clear inst');
+    this.partPrevButton = makeButton('<', 'dir');
+    this.partAddButton = makeButton('+16');
+    this.partNextButton = makeButton('>', 'dir');
     this.bpmSelect = new Slider('BPM', 120, 60, 180, 2);
     this.panningSelect = new Slider('PAN', 0, -1, 1, 0.1, (value) => getXAsPercentOfY(value, 1));
     this.volumeSelect = new Slider('LEVEL', 0.5, 0, 1, 0.05, (value) => floorTo(getXAsPercentOfY(value, 1)));
@@ -229,6 +232,10 @@ class Sequencer extends DisplayObject {
     this.controllersLeftNode = makeNode('div', 'controllers-left');
     this.controllersRightNode = makeNode('div', 'controllers-right');
     this.buttonsNode = makeNode('div', 'buttons');
+
+    this.buttonsTopNode = makeNode('div', 'buttons-top');
+    this.buttonsBottomNode = makeNode('div', 'buttons-bottom');
+
     this.buttonsLeftNode = makeNode('div', 'buttons-left');
     this.buttonsRightNode = makeNode('div', 'buttons-right');
     this.slidersNode = makeNode('div', 'sliders');
@@ -244,12 +251,21 @@ class Sequencer extends DisplayObject {
     this.buttonsRightNode.appendChild(this.tapButton);
     this.buttonsRightNode.appendChild(this.saveButton);
     this.buttonsRightNode.appendChild(this.startButton);
+
     this.controllersLeftNode.appendChild(this.patternsNode);
     this.controllersLeftNode.appendChild(this.slidersNode);
     this.instrumentSelect.appendTo(this.controllersRightNode);
 
-    this.buttonsNode.appendChild(this.buttonsLeftNode);
-    this.buttonsNode.appendChild(this.buttonsRightNode);
+    this.buttonsTopNode.appendChild(this.partPrevButton);
+    this.buttonsTopNode.appendChild(this.partAddButton);
+    this.buttonsTopNode.appendChild(this.partNextButton);
+
+    this.buttonsBottomNode.appendChild(this.buttonsLeftNode);
+    this.buttonsBottomNode.appendChild(this.buttonsRightNode);
+
+    this.buttonsNode.appendChild(this.buttonsTopNode);
+    this.buttonsNode.appendChild(this.buttonsBottomNode);
+
     this.controllersRightNode.appendChild(this.buttonsNode);
     this.controllersNode.appendChild(this.controllersLeftNode);
     this.controllersNode.appendChild(this.controllersRightNode);
@@ -294,7 +310,7 @@ class Sequencer extends DisplayObject {
     this.patternClearButton.addEventListener('click', () => {
       this.instruments.forEach((inst) => {
         inst.clear();
-      });;
+      });
       this.applyInstrument();
     });
 
@@ -302,6 +318,40 @@ class Sequencer extends DisplayObject {
       this.instrument.clear();
       this.applyInstrument();
     });
+
+    this.partPrevButton.addEventListener('click', () => {
+
+      this.part --;
+      this.steps.setPart(this.part);
+      this.toggleButtons();
+
+    });
+
+    this.partAddButton.addEventListener('click', () => {
+
+      this.steps.addPart();
+      this.instruments.forEach((inst) => {
+        inst.addPart();
+      });
+
+      this.applyInstrument();
+
+      this.part ++;
+      this.parts ++;
+      this.steps.setPart(this.part);
+      this.toggleButtons();
+
+    });
+
+    this.partNextButton.addEventListener('click', () => {
+
+      this.part ++;
+      this.steps.setPart(this.part);
+      this.toggleButtons();
+
+    });
+
+    this.toggleButtons();
 
     if(!this.storage.get('patterns')) {
       this.applyPresets();
@@ -334,13 +384,13 @@ class Sequencer extends DisplayObject {
 
     this.play(this.currentStep);
 
-    if(this.queued && this.currentStep === (this.steps.count - 1)) {
+    if(this.queued && this.currentStep === (this.patternLength - 1)) {
       this.patternChangeHandler(true);
       this.queued = false;
       this.setProp('queued', this.queued);
     };
 
-    if(this.currentStep===(this.steps.count - 1)) {
+    if(this.currentStep === (this.patternLength - 1)) {
       this.currentStep = 0;
     }
     else {
@@ -442,9 +492,10 @@ class Sequencer extends DisplayObject {
 
       const saved = [...existing, this.getPatternData(name)];
       this.storage.set('patterns', saved);
-      this.renderPatternSelect();
 
     };
+
+    this.renderPatternSelect();
 
     return this;
 
@@ -482,7 +533,12 @@ class Sequencer extends DisplayObject {
     this.instruments = pattern[2].map((steps, index) => new Instrument(this.keys[index], steps));
     this.sounds.mixer = toMixer(this.keys, pattern[3]);
     this.instrument = this.instruments[this.instrumentSelect.getValue()];
+    this.patternLength = this.instrument.steps.length;
+    this.part = 0;
+    this.parts = this.patternLength/16;
+    this.steps.setPart(0);
     this.applyInstrument();
+    this.toggleButtons();
 
   };
   applyInstrument() {
@@ -502,9 +558,45 @@ class Sequencer extends DisplayObject {
     return [name, this.bpmSelect.getValue(), this.instruments.map((inst) => inst.steps), this.instruments.map((inst) => this.sounds.mixer[inst.name])]
 
   };
+  toggleButtons() {
+
+    if(this.parts===1) {
+      // can't move either way
+      this.partPrevButton.disabled = true;
+      this.partNextButton.disabled = true;
+      return;
+    };
+
+    if(this.parts===4) {
+      // can't add new part
+      this.partAddButton.disabled = true;
+      return;
+    };
+
+    if(this.part<this.parts-1) {
+      // can move next
+      this.partNextButton.disabled = false;
+    }
+    else {
+      // can't move next
+      this.partNextButton.disabled = true;
+    };
+
+    if(this.part===0) {
+      // can't move left
+      this.partPrevButton.disabled = true;
+    }
+    else {
+      // can move left
+      this.partPrevButton.disabled = false;
+    };
+
+    return this;
+
+  };
   playing = false;
-  patternLength = 16;
   currentStep = 0;
+  patternLength = 16;
   queued = false;
   modes = {
     '1/16': 15000,
@@ -517,6 +609,8 @@ class Sequencer extends DisplayObject {
     ["bob",120,[[1,0,0,0,0,0,1,0,0,0,1,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0],[1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0]],[[0.5,0],[0.5,0],[0.5,0],[0.5,0],[0.5,0],[0.5,0]]],
     ["eminem",120,[[1,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0],[0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0],[0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],[[0.5,0],[0.5,0],[0.5,0],[0.5,0],[0.5,0],[0.5,0]]]
   ];
+  part = 0;
+  parts = 1;
 };
 
 class Instrument {
@@ -528,21 +622,29 @@ class Instrument {
   };
   clear() {
 
-    this.steps = makeArray(16, () => 0);
+    this.steps = makeArray(this.steps.length, () => 0);
+    return this;
+
+  };
+  addPart() {
+
+    const copy = this.steps.slice(this.steps.length-16);
+    this.steps = this.steps.concat(copy);
 
   };
 };
 
 class Steps extends DisplayObject {
-  constructor(seq, count = 16) {
+  constructor(seq, count = 64) {
 
     super();
 
     this.seq = seq;
-    this.count = count;
     this.node = makeNode('div', 'steps');
+    this.count = count;
     this.steps = this.make();
 
+    this.setPart(0);
     this.render();
 
   };
@@ -551,9 +653,13 @@ class Steps extends DisplayObject {
     let colorIndex = 0;
 
     return makeArray(this.count).map((index) => {
-      const step = new Step(this.seq, this.stepColors[colorIndex], index);
+      const step = new Step(this.seq, this.stepColors[colorIndex], index, this.part);
       if(index > 0 && (index + 1) % 4 === 0) {
         colorIndex += 1;
+      };
+      if(index > 0 && (index + 1) % 16 === 0) {
+        this.part += 1;
+        colorIndex = 0;
       };
       return step;
     });
@@ -591,24 +697,41 @@ class Steps extends DisplayObject {
     return this;
 
   };
+  setPart(part) {
+
+    this.steps.forEach((step) => {
+      if(step.part===part) {
+        step.show();
+      }
+      else {
+        step.hide();
+      };
+    });
+
+    return this;
+
+  };
   stepColors = ['red', 'orange', 'yellow', 'white'];
+  part = 0;
 };
 
 class Step extends DisplayObject {
-  constructor(seq, color = 'red',  beat) {
+  constructor(seq, color = 'red', beat, part) {
 
     super();
 
-    this.node = makeNode('div', 'step');
+    this.node = makeNode('div', `step.${color}`);
     this.indicator = makeNode('div', 'step-indicator');
     this.color = color;
     this.beat = beat;
     this.seq = seq;
+    this.part = part;
 
     this.node.appendChild(this.indicator);
 
     this.setProp('enabled', this.enabled);
-    this.setProp('color', this.color);
+    this.setProp('active', this.active);
+    this.setProp('visible', this.visible);
 
     this.addEventListener('click', () => {
       this.toggle();
@@ -660,8 +783,23 @@ class Step extends DisplayObject {
     return this;
 
   };
+  show() {
+
+    this.visible = true;
+    this.setProp('visible', this.visible);
+    return this;
+
+  };
+  hide() {
+
+    this.visible = false;
+    this.setProp('visible', this.visible);
+    return this;
+
+  };
   enabled = false;
   active = false;
+  visible = true;
 };
 
 class Channel {
@@ -678,5 +816,7 @@ console.log(sequencer);
 sequencer.appendTo(document.body);
 
 if(isTiny) {
-  document.documentElement.style.setProperty('--pad-size', `${((window.innerWidth - 60) - 30) / 4}px`);
+  const gap = 5;
+  document.documentElement.style.setProperty('--gap', `${gap}px`);
+  document.documentElement.style.setProperty('--pad-size', `${((window.innerWidth - (25*2)) - (gap*3)) / 4}px`);
 };

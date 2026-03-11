@@ -33,11 +33,14 @@
   --white: #e9e8e7;
   --background: #232425;
   --foreground: #DDD;
+  --gap: 7px;
+  --step-indicator-inactive: #4f0a05;
+  --step-indicator-active: #e93323;
 }
 
 @keyframes blink {
-  from {background-color: black;}
-  to {background-color: red;}
+  from {background-color: var(--step-indicator-inactive);}
+  to {background-color: var(--step-indicator-active);}
 }
 
 * {
@@ -47,6 +50,8 @@
 
 html {
   overflow: hidden;
+  display: flex;
+  justify-content: end;
 }
 
 body {
@@ -65,7 +70,7 @@ body {
   -moz-osx-font-smoothing: grayscale;
 
   @media (max-width: 400px) {
-    padding: 60px 30px 40px;
+    padding: 60px 25px 40px;
   }
 
 }
@@ -79,12 +84,12 @@ a {
   display: flex;
   flex-direction: column;
   align-items: start;
-  gap: 30px;
+  gap: 25px;
 }
 
 .steps {
   display: flex;
-  gap: 10px;
+  gap: var(--gap);
 
   @media (max-width: 400px) {
     flex-wrap: wrap;
@@ -94,101 +99,57 @@ a {
 .step {
   width: 47px;
   height: 87px;
-  border-radius: 5px;
   display: flex;
   justify-content: center;
-  padding-top: 10px;
+  padding-top: 12px;
   box-sizing: border-box;
   cursor: pointer;
+  border: solid 2px var(--background);
+  border-radius: 8px;
 
   @media (max-width: 400px) {
     height: var(--pad-size);
     width: var(--pad-size);
   }
 
-  &[data-color="red"] {
+  &[data-visible="false"] {
+    display: none;
+  }
+
+  &.red {
     background-color: var(--red);
   }
 
-  &[data-color="orange"] {
+  &.orange {
     background-color: var(--orange);
   }
 
-  &[data-color="yellow"] {
+  &.yellow {
     background-color: var(--yellow);
   }
 
-  &[data-color="white"] {
+  &.white {
     background-color: var(--white);
   }
 
   .step-indicator {
-    background-color: #4f0a05;
+    background-color: var(--step-indicator-inactive);
     width: 10px;
     height: 10px;
     outline: solid 4px rgba(0, 0, 0, 0.25);
     border-radius: 100%;
-  }
 
-  &[data-active="true"],
-  &[data-enabled="true"] {
-    .step-indicator {
-      background-color: #e93323;
+    [data-active="true"] &,
+    [data-enabled="true"] & {
+      background-color: var(--step-indicator-active);
     }
-  }
 
-  &[data-active="true"][data-enabled="true"] {
-    .step-indicator {
-      background-color: #4f0a05;
+    [data-active="true"][data-enabled="true"] & {
+      background-color: var(--step-indicator-inactive);
     }
+
   }
-}
 
-.channels {
-  display: flex;
-}
-
-.channel {
-  padding: 0 5px;
-  width: 85px;
-  height: 400px;
-  border-left: solid 1px #9c9fa0;
-  display: flex;
-  justify-content: space-between;
-  flex-direction: column;
-}
-
-.instrument-name {
-  background-color: #f4edca;
-  color: var(--background);
-  border-radius: 5px;
-  padding: 5px 0;
-  text-align: center;
-  font-variant: small-caps;
-  font-weight: 600;
-}
-
-.modifiers {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.modifier {
-  text-align: center;
-}
-
-.modifier-label {
-  text-transform: uppercase;
-  color: #9c9fa0;
-  font-weight: 700;
-  font-size: 14px;
-}
-
-select,
-button {
-  font-size: inherit;
-  font-family: inherit;
 }
 
 .toggle {
@@ -222,14 +183,15 @@ button {
       transform: translate(-50%, -50%);
       width: 100%;
       height: 100%;
-      background-color: black;
+      background-color: var(--step-indicator-inactive);
       border-radius: 100%;
       border: solid 2px var(--white);
+      border: solid 3px black;
       transition: background-color .25s;
       box-sizing: border-box;
     }
     &:checked:before {
-      background-color: red;
+      background-color: var(--step-indicator-active);
     }
     &:checked + label {
       color: var(--yellow);
@@ -245,17 +207,13 @@ button {
 
 .buttons {
   display: flex;
-  gap: 5px;
-}
-
-.buttons-left,
-.buttons-right {
-  display: flex;
+  gap: var(--gap);
   flex-direction: column;
-  gap: 5px;
 
   button {
-    padding: 15px 15px;
+    font-family: inherit;
+    font-size: 13px;
+    padding: 15px;
     background-color: var(--red);
     color: var(--foreground);
     border-radius: 5px;
@@ -263,12 +221,39 @@ button {
     text-transform: uppercase;
     border: 0;
     cursor: pointer;
-    width: 80px;
-    font-size: 14px;
+    width: var(--pad-size);
     line-height: 1;
     text-align: center;
     flex-grow: 1;
+    &[disabled] {
+      opacity: 0.6;
+      pointer-events: none;
+    }
   }
+
+  .buttons-top {
+    button {
+      width: auto;
+      padding: 7px 15px;
+      &.dir {
+        font-size: 20px;
+      }
+    }
+  }
+
+  .buttons-top,
+  .buttons-bottom {
+    display: flex;
+    gap: var(--gap);
+  }
+
+  .buttons-left,
+  .buttons-right {
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap);
+  }
+
 }
 
 .sliders {
@@ -287,6 +272,7 @@ button {
       direction: rtl;
       appearance: none;
       width: 5px;
+      height: 120px;
       background-color: black;
       &::-webkit-slider-thumb {
         appearance: none;
@@ -321,7 +307,7 @@ button {
   @media (max-width: 400px) {
     flex-direction: column;
     width: 100%;
-    gap: 20px;
+    gap: 25px;
   }
 
 }
@@ -352,7 +338,6 @@ button {
 }
 
 .patterns {
-  padding-bottom: 40px;
 
   .toggle {
     max-height: 120px;
