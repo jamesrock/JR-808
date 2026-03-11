@@ -223,7 +223,7 @@ class Sequencer extends DisplayObject {
     this.patternClearButton = makeButton('clear ptrn');
     this.instrumentClearButton = makeButton('clear inst');
     this.partPrevButton = makeButton('<', 'dir');
-    this.partAddButton = makeButton('+16');
+    this.partAddButton = makeButton('+16', 'add');
     this.partNextButton = makeButton('>', 'dir');
     this.bpmSelect = new Slider('BPM', 120, 60, 180, 2);
     this.panningSelect = new Slider('PAN', 0, -1, 1, 0.1, (value) => getXAsPercentOfY(value, 1));
@@ -390,7 +390,7 @@ class Sequencer extends DisplayObject {
 
     this.play(this.currentStep);
 
-    if(this.currentStep === (this.patternLength - 1)) {
+    if(this.currentStep === (this.instrument.steps.length - 1)) {
       this.currentStep = 0;
     }
     else {
@@ -533,9 +533,8 @@ class Sequencer extends DisplayObject {
     this.instruments = pattern[2].map((steps, index) => new Instrument(this.keys[index], steps));
     this.sounds.mixer = toMixer(this.keys, pattern[3]);
     this.instrument = this.instruments[this.instrumentSelect.getValue()];
-    this.patternLength = this.instrument.steps.length;
     this.part = 0;
-    this.parts = this.patternLength/16;
+    this.parts = this.instrument.steps.length/16;
     this.steps.setPart(0);
     this.applyInstrument();
     this.toggleButtons();
@@ -570,7 +569,6 @@ class Sequencer extends DisplayObject {
     if(this.parts===4) {
       // can't add new part
       this.partAddButton.disabled = true;
-      return;
     };
 
     if(this.part<this.parts-1) {
@@ -582,13 +580,13 @@ class Sequencer extends DisplayObject {
       this.partNextButton.disabled = true;
     };
 
-    if(this.part===0) {
-      // can't move left
-      this.partPrevButton.disabled = true;
-    }
-    else {
+    if(this.part>0) {
       // can move left
       this.partPrevButton.disabled = false;
+    }
+    else {
+      // can't move left
+      this.partPrevButton.disabled = true;
     };
 
     return this;
@@ -596,7 +594,6 @@ class Sequencer extends DisplayObject {
   };
   playing = false;
   currentStep = 0;
-  patternLength = 16;
   queued = false;
   modes = {
     '1/16': 15000,
