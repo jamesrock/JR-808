@@ -3,6 +3,7 @@ import {
   Storage,
   DisplayObject,
   setDocumentHeight,
+  makeSelect,
   makeArray,
   makeInput,
   makeButton,
@@ -11,7 +12,8 @@ import {
   getXAsPercentOfY,
   floorTo,
   ceilTo,
-  limit
+  limit,
+  minWidth
 } from '@jamesrock/rockjs';
 
 setDocumentHeight();
@@ -62,6 +64,34 @@ const toMixer = (keys, saved) => {
 
 const limitChars = (name, max = 12) => {
   return name.length > max ? `${name.split('').splice(0, max).join('')}...` : name;
+};
+
+const addInputListeners = (nodes, listener) => {
+
+  nodes.forEach((node) => {
+    node.addEventListener('input', () => {
+      listener(node.getValue());
+    });
+  });
+
+  return nodes;
+
+};
+
+const append = (target) => {
+  const fn = (node) => {
+    target.appendChild(node);
+    return fn;
+  };
+  return fn;
+};
+
+const appendTo = (target) => {
+  const fn = (node) => {
+    node.appendTo(target);
+    return fn;
+  };
+  return fn;
 };
 
 export class SoundManager {
@@ -133,11 +163,11 @@ class Toggle extends DisplayObject {
 
     this.node = makeNode('form', className);
     this.name = name;
+    this.value = value;
     this.title = title;
     this.toggle = makeToggle(items, name, value);
-    this.value = value;
 
-    this.node.appendChild(this.toggle);
+    append(this.node)(this.toggle);
 
     this.setProp('title', title);
 
@@ -156,8 +186,23 @@ class Toggle extends DisplayObject {
   };
 };
 
+class ToggleFallback extends DisplayObject {
+  constructor(items, value) {
+
+    super();
+
+    this.node = makeSelect(items, value);
+
+  };
+  getValue() {
+
+    return Number(this.node.value);
+
+  };
+};
+
 class Slider extends DisplayObject {
-  constructor(label = '{label}', value, min, max, step = 1, transform = (a) => a) {
+  constructor(label = '{label}', value, min, max, step = 1, transform = (a) => a, direction = 'vertical') {
 
     super();
 
@@ -166,9 +211,11 @@ class Slider extends DisplayObject {
     this.slider = makeSlider(value, min, max, step);
     this.label = label;
     this.transform = transform;
+    this.direction = direction;
 
-    this.node.appendChild(this.slider);
-    this.node.appendChild(this.display);
+    this.setProp('direction', this.direction);
+
+    append(this.node)(this.slider)(this.display);
 
     this.node.addEventListener('input', () => {
       this.inputHandler();
@@ -220,63 +267,58 @@ class Sequencer extends DisplayObject {
     this.storage = new Storage('me.jamesrock.seq');
     this.keys = this.sounds.keys;
     this.instruments = this.keys.map((name) => new Instrument(name));
-    this.instrumentSelect = new Toggle(this.keys.map((inst, index) => [inst, index]), 'instrument', 0, 'instruments', 'Instrument');
+    this.instrumentSelect = this.makeInstrumentSelect();
 
     this.startButton = makeButton('start');
     this.saveButton = makeButton('store');
     this.tapButton = makeButton('tap');
-    this.patternClearButton = makeButton('clear ptrn', 'clear');
-    this.instrumentClearButton = makeButton('clear inst', 'clear');
+    this.patternClearButton = makeButton('clear\nptrn', 'clear');
+    this.instrumentClearButton = makeButton('clear\ninst', 'clear');
     this.partPrevButton = makeButton('<', 'dir');
     this.partAddButton = makeButton('+16', 'add');
     this.partNextButton = makeButton('>', 'dir');
-    this.bpmSelect = new Slider('BPM', 120, 60, 180, 2);
-    this.panningSelect = new Slider('PAN', 0, -1, 1, 0.1, (value) => getXAsPercentOfY(value, 1));
-    this.volumeSelect = new Slider('LEVEL', 0.5, 0, 1, 0.1, (value) => floorTo(getXAsPercentOfY(value, 1)));
-    this.controllersNode = makeNode('div', 'controllers');
-    this.controllersLeftNode = makeNode('div', 'controllers-left');
-    this.controllersRightNode = makeNode('div', 'controllers-right');
-    this.buttonsNode = makeNode('div', 'buttons');
 
+    const sliderDirection = tiny ? 'horizontal' : 'vertical';
+
+    this.bpmSelect = new Slider('BPM', 120, 60, 180, 2, (a) => a, sliderDirection);
+    this.panningSelect = new Slider('PAN', 0, -1, 1, 0.1, (value) => getXAsPercentOfY(value, 1), sliderDirection);
+    this.volumeSelect = new Slider('LEVEL', 0.5, 0, 1, 0.1, (value) => floorTo(getXAsPercentOfY(value, 1)), sliderDirection);
+
+    this.controllersNode = makeNode('div', 'controllers');
+    this.controllersTopNode = makeNode('div', 'controllers-top');
+    this.controllersBottomNode = makeNode('div', 'controllers-bottom');
+    this.controllersBottomLeftNode = makeNode('div', 'controllers-bottom-left');
+    this.controllersBottomRightNode = makeNode('div', 'controllers-bottom-right');
+    this.fallbacksNode = makeNode('div', 'fallbacks');
+    this.buttonsNode = makeNode('div', 'buttons');
     this.buttonsTopNode = makeNode('div', 'buttons-top');
     this.buttonsBottomNode = makeNode('div', 'buttons-bottom');
-
     this.buttonsLeftNode = makeNode('div', 'buttons-left');
     this.buttonsRightNode = makeNode('div', 'buttons-right');
     this.slidersNode = makeNode('div', 'sliders');
     this.patternsNode = makeNode('div', 'patterns-target');
+    this.patternsFallbackNode = makeNode('div', 'patterns-fallback-target');
 
-    this.volumeSelect.appendTo(this.slidersNode);
-    this.panningSelect.appendTo(this.slidersNode);
-    this.bpmSelect.appendTo(this.slidersNode);
+    appendTo(this.slidersNode)(this.volumeSelect)(this.panningSelect)(this.bpmSelect);
+    append(this.buttonsLeftNode)(this.patternClearButton)(this.instrumentClearButton);
+    append(this.buttonsRightNode)(this.tapButton)(this.saveButton)(this.startButton);
+    append(this.controllersTopNode)(this.patternsNode)(this.slidersNode);
+    appendTo(this.controllersBottomLeftNode)(this.instrumentSelect);
+    append(this.controllersBottomLeftNode)(this.fallbacksNode);
+    append(this.controllersBottomNode)(this.controllersBottomLeftNode)(this.controllersBottomRightNode);
+    append(this.buttonsTopNode)(this.partPrevButton)(this.partAddButton)(this.partNextButton);
+    append(this.buttonsBottomNode)(this.buttonsLeftNode)(this.buttonsRightNode);
+    append(this.buttonsNode)(this.buttonsTopNode)(this.buttonsBottomNode);
+    append(this.controllersBottomRightNode)(this.buttonsNode);
+    append(this.controllersNode)(this.controllersTopNode)(this.controllersBottomNode);
+    append(this.node)(this.controllersNode);
+    appendTo(this.node)(this.steps);
 
-    this.buttonsLeftNode.appendChild(this.patternClearButton);
-    this.buttonsLeftNode.appendChild(this.instrumentClearButton);
-
-    this.buttonsRightNode.appendChild(this.tapButton);
-    this.buttonsRightNode.appendChild(this.saveButton);
-    this.buttonsRightNode.appendChild(this.startButton);
-
-    this.controllersLeftNode.appendChild(this.patternsNode);
-    this.controllersLeftNode.appendChild(this.slidersNode);
-    this.instrumentSelect.appendTo(this.controllersRightNode);
-
-    this.buttonsTopNode.appendChild(this.partPrevButton);
-    this.buttonsTopNode.appendChild(this.partAddButton);
-    this.buttonsTopNode.appendChild(this.partNextButton);
-
-    this.buttonsBottomNode.appendChild(this.buttonsLeftNode);
-    this.buttonsBottomNode.appendChild(this.buttonsRightNode);
-
-    this.buttonsNode.appendChild(this.buttonsTopNode);
-    this.buttonsNode.appendChild(this.buttonsBottomNode);
-
-    this.controllersRightNode.appendChild(this.buttonsNode);
-    this.controllersNode.appendChild(this.controllersLeftNode);
-    this.controllersNode.appendChild(this.controllersRightNode);
-
-    this.node.appendChild(this.controllersNode);
-    this.steps.appendTo(this.node);
+    if(tiny) {
+      appendTo(this.fallbacksNode)(this.bpmSelect)(this.panningSelect)(this.volumeSelect);
+      append(this.fallbacksNode)(this.patternsFallbackNode);
+      appendTo(this.fallbacksNode)(this.instrumentSelect);
+    };
 
     this.startButton.addEventListener('click', () => {
 
@@ -295,21 +337,27 @@ class Sequencer extends DisplayObject {
       this.save();
     });
 
-    this.instrumentSelect.addEventListener('input', () => {
-      this.instrument = this.instruments[this.instrumentSelect.getValue()];
+    addInputListeners([this.bpmSelect], (value) => {
+      this.bpm = value;
+    });
+
+    addInputListeners([this.instrumentSelect], (value) => {
+      this.instrument = this.instruments[value];
       this.applyInstrument();
     });
 
-    this.panningSelect.addEventListener('input', () => {
-      this.sounds.pan(this.instrument.name, this.panningSelect.getValue());
+    addInputListeners([this.panningSelect], (value) => {
+      this.sounds.pan(this.instrument.name, value);
     });
 
-    this.volumeSelect.addEventListener('input', () => {
-      this.sounds.volume(this.instrument.name, this.volumeSelect.getValue());
+    addInputListeners([this.volumeSelect], (value) => {
+      this.sounds.volume(this.instrument.name, value);
     });
 
-    this.patternsNode.addEventListener('input', () => {
-      this.patternChangeHandler();
+    [this.patternsNode, this.patternsFallbackNode].forEach((node) => {
+      node.addEventListener('input', () => {
+        this.patternChangeHandler();
+      });
     });
 
     this.tapButton.addEventListener('click', () => {
@@ -433,7 +481,7 @@ class Sequencer extends DisplayObject {
 
     this.timer = setTimeout(() => {
       this.start();
-    }, this.modes[this.mode]/this.bpmSelect.getValue());
+    }, this.modes[this.mode]/this.bpm);
 
     return this;
 
@@ -545,9 +593,19 @@ class Sequencer extends DisplayObject {
     };
 
     const saved = this.storage.get('patterns');
-    this.patternSelect = new Toggle(saved.map(([name, bpm], index) => [`${limitChars(name)} ${bpm}`, index]), 'pattern', refresh ? (saved.length - 1) : this.storage.get('pattern'), 'patterns', 'Pattern');
-    this.patternSelect.appendTo(this.patternsNode);
-    this.patternSelect.scrollIntoView();
+    const items = saved.map(([name, bpm], index) => [`${limitChars(name)} ${bpm}`, index]);
+    const defaultValue = refresh ? (saved.length - 1) : this.storage.get('pattern');
+
+    if(tiny) {
+      this.patternSelect = new ToggleFallback(items, defaultValue);
+      this.patternSelect.appendTo(this.patternsFallbackNode);
+    }
+    else {
+      this.patternSelect = new Toggle(items, 'pattern', defaultValue, 'patterns', 'Pattern');
+      this.patternSelect.appendTo(this.patternsNode);
+      this.patternSelect.scrollIntoView();
+    };
+
     this.patternChangeHandler();
 
     return this;
@@ -564,6 +622,7 @@ class Sequencer extends DisplayObject {
     const saved = this.storage.get('patterns');
     const patternId = this.patternSelect.getValue();
     const pattern = saved[patternId];
+    this.bpm = pattern[1];
     this.bpmSelect.setValue(pattern[1]);
     this.instruments = pattern[2].map((steps, index) => new Instrument(this.keys[index], steps));
     this.sounds.mixer = toMixer(this.keys, pattern[3]);
@@ -652,8 +711,21 @@ class Sequencer extends DisplayObject {
     return this;
 
   };
+  makeInstrumentSelect() {
+
+    const items = this.keys.map((inst, index) => [inst, index]);
+
+    if(tiny) {
+      return new ToggleFallback(items, 0);
+    }
+    else {
+      return new Toggle(items, 'instrument', 0, 'instruments', 'Instrument');
+    };
+
+  };
   playing = false;
   currentStep = 0;
+  bpm = 120;
   queued = false;
   modes = {
     '1/16': 15000,
@@ -876,14 +948,17 @@ class Channel {
   };
 };
 
+const tiny = !minWidth(376);
+const gutter = tiny ? 15 : 25;
+const gap = 4;
+const padSize = (((limit(window.innerWidth, 500) - (gutter*2)) - (gap*3)) / 4);
+document.documentElement.style.setProperty('--gap', `${gap}px`);
+document.documentElement.style.setProperty('--pad-size', `${padSize}px`);
+document.documentElement.style.setProperty('--sliders-size', `${(padSize*2) + gap}px`);
+document.documentElement.style.setProperty('--gutter', `${gutter}px`);
+
 const sequencer = new Sequencer();
 
 console.log(sequencer);
 
 sequencer.appendTo(document.body);
-
-const gap = 4;
-const padSize = (((limit(window.innerWidth, 500) - (25*2)) - (gap*3)) / 4);
-document.documentElement.style.setProperty('--gap', `${gap}px`);
-document.documentElement.style.setProperty('--pad-size', `${padSize}px`);
-document.documentElement.style.setProperty('--sliders-size', `${(padSize*2) + gap}px`);
