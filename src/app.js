@@ -1,7 +1,6 @@
 import '/app.css';
 import {
   Storage,
-  // SoundManager,
   DisplayObject,
   setDocumentHeight,
   makeArray,
@@ -12,7 +11,7 @@ import {
   getXAsPercentOfY,
   floorTo,
   ceilTo,
-  isTiny
+  limit
 } from '@jamesrock/rockjs';
 
 setDocumentHeight();
@@ -61,7 +60,7 @@ const toMixer = (keys, saved) => {
   return out;
 };
 
-const limit = (name, max = 12) => {
+const limitChars = (name, max = 12) => {
   return name.length > max ? `${name.split('').splice(0, max).join('')}...` : name;
 };
 
@@ -546,7 +545,7 @@ class Sequencer extends DisplayObject {
     };
 
     const saved = this.storage.get('patterns');
-    this.patternSelect = new Toggle(saved.map(([name, bpm], index) => [`${limit(name)} ${bpm}`, index]), 'pattern', refresh ? (saved.length - 1) : this.storage.get('pattern'), 'patterns', 'Pattern');
+    this.patternSelect = new Toggle(saved.map(([name, bpm], index) => [`${limitChars(name)} ${bpm}`, index]), 'pattern', refresh ? (saved.length - 1) : this.storage.get('pattern'), 'patterns', 'Pattern');
     this.patternSelect.appendTo(this.patternsNode);
     this.patternSelect.scrollIntoView();
     this.patternChangeHandler();
@@ -883,10 +882,8 @@ console.log(sequencer);
 
 sequencer.appendTo(document.body);
 
-if(isTiny) {
-  const gap = 4;
-  const padSize = (((window.innerWidth - (25*2)) - (gap*3)) / 4);
-  document.documentElement.style.setProperty('--gap', `${gap}px`);
-  document.documentElement.style.setProperty('--pad-size', `${padSize}px`);
-  document.documentElement.style.setProperty('--sliders-size', `${(padSize*2) + gap}px`);
-};
+const gap = 4;
+const padSize = (((limit(window.innerWidth, 500) - (25*2)) - (gap*3)) / 4);
+document.documentElement.style.setProperty('--gap', `${gap}px`);
+document.documentElement.style.setProperty('--pad-size', `${padSize}px`);
+document.documentElement.style.setProperty('--sliders-size', `${(padSize*2) + gap}px`);

@@ -51,7 +51,7 @@
 html {
   overflow: hidden;
   display: flex;
-  justify-content: end;
+  justify-content: center;
 }
 
 body {
@@ -60,19 +60,15 @@ body {
   font-family: 'Poppins', sans-serif;
   font-size: 15px;
   font-weight: 600;
-  padding: 50px;
+  padding: 60px 25px 40px;
   height: 100%;
   box-sizing: border-box;
+  max-width: 500px;
   display: flex;
   justify-content: end;
   flex-direction: column;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-
-  @media (max-width: 400px) {
-    padding: 60px 25px 40px;
-  }
-
 }
 
 a {
@@ -90,15 +86,10 @@ a {
 .steps {
   display: flex;
   gap: var(--gap);
-
-  @media (max-width: 400px) {
-    flex-wrap: wrap;
-  }
+  flex-wrap: wrap;
 }
 
 .step {
-  width: 47px;
-  height: 87px;
   display: flex;
   justify-content: center;
   padding-top: 12px;
@@ -106,11 +97,8 @@ a {
   cursor: pointer;
   border: solid 2px black;
   border-radius: 8px;
-
-  @media (max-width: 400px) {
-    height: var(--pad-size);
-    width: var(--pad-size);
-  }
+  height: var(--pad-size);
+  width: var(--pad-size);
 
   &[data-visible="false"] {
     display: none;
@@ -274,7 +262,9 @@ a {
   display: flex;
   gap: 10px;
   width: var(--sliders-size);
-  justify-content: center;
+  justify-content: space-between;
+  padding: 0 5px;
+  box-sizing: border-box;
 
   .slider {
     display: flex;
@@ -320,13 +310,9 @@ a {
   display: flex;
   gap: 40px;
   align-items: end;
-
-  @media (max-width: 400px) {
-    flex-direction: column;
-    width: 100%;
-    gap: 25px;
-  }
-
+  flex-direction: column;
+  width: 100%;
+  gap: 25px;
 }
 
 .controllers-left,
@@ -334,12 +320,8 @@ a {
   display: flex;
   align-items: end;
   gap: 10px;
-
-  @media (max-width: 400px) {
-    width: 100%;
-    justify-content: space-between;
-  }
-
+  width: 100%;
+  justify-content: space-between;
 }
 
 [data-title] {
@@ -360,7 +342,7 @@ a {
   .toggle {
     max-height: 120px;
     overflow: auto;
-    padding-right: 12px;
+    padding-right: 15px;
   }
 
 }
