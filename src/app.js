@@ -505,8 +505,14 @@ class Sequencer extends DisplayObject {
     this.currentStep = 0;
     this.steps.clear();
 
-    this.resetPartAddButton();
     this.toggleButtons();
+
+    if(this.parts>1) {
+      this.flashPart(1.5);
+    }
+    else {
+      this.resetPartAddButton();
+    };
 
     clearTimeout(this.timer);
 
@@ -703,16 +709,16 @@ class Sequencer extends DisplayObject {
     return this;
 
   };
-  flashPart() {
+  flashPart(duration = 1) {
 
-    this.partAddButton.innerText = (this.part + 1);
     this.partAddButton.disabled = true;
+    this.partAddButton.innerText = (this.part + 1);
 
     clearTimeout(this.flashTimeout);
 
     this.flashTimeout = setTimeout(() => {
       this.resetPartAddButton();
-    }, 1000);
+    }, duration*1000);
 
     return this;
 
