@@ -789,6 +789,7 @@ class Steps extends DisplayObject {
     this.count = count;
     this.steps = this.make();
 
+    this.addListeners();
     this.render();
 
   };
@@ -797,7 +798,7 @@ class Steps extends DisplayObject {
     let colorIndex = 0;
 
     return makeArray(this.count).map((index) => {
-      const step = new Step(this.seq, this.stepColors[colorIndex], index, this.part);
+      const step = new Step(this.seq, index, this.part, this.stepColors[colorIndex]);
       if((index + 1) % 4 === 0) {
         colorIndex += 1;
       };
@@ -862,21 +863,53 @@ class Steps extends DisplayObject {
     return this;
 
   };
+  addListeners() {
+
+    let beats = [];
+
+    this.node.addEventListener('click', (e) => {
+      if(e.target?.classList.contains('step')) {
+        this.steps[e.target.dataset.beat].toggle();
+  		};
+    });
+
+    this.node.addEventListener('touchstart', () => {
+      beats = [];
+    });
+
+    this.node.addEventListener('touchmove', (e) => {
+
+      const node = document.elementFromPoint(e.touches[0].clientX, e.touches[0].clientY);
+
+     	if(node?.classList.contains('step')) {
+        const beat = node.dataset.beat;
+    		if(beats.indexOf(beat)===-1) {
+     			beats.push(beat);
+          this.steps[beat].toggle();
+    		};
+     	};
+     	e.preventDefault();
+
+    });
+
+    return this;
+
+  };
   stepColors = ['red', 'orange', 'yellow', 'white'];
   part = 0;
 };
 
 class Step extends DisplayObject {
-  constructor(seq, color = 'red', beat, part) {
+  constructor(seq, beat, part, color = 'red') {
 
     super();
 
     this.node = makeNode('div', `step.${color}`);
     this.indicator = makeNode('div', 'step-indicator');
-    this.color = color;
-    this.beat = beat;
     this.seq = seq;
+    this.beat = beat;
     this.part = part;
+    this.color = color;
     this.visible = this.part===this.seq.part;
 
     this.node.appendChild(this.indicator);
@@ -884,10 +917,7 @@ class Step extends DisplayObject {
     this.setProp('enabled', this.enabled);
     this.setProp('active', this.active);
     this.setProp('visible', this.visible);
-
-    this.addEventListener('click', () => {
-      this.toggle();
-    });
+    this.setProp('beat', this.beat);
 
   };
   flash() {
