@@ -177,7 +177,7 @@ class Toggle extends DisplayObject {
   };
   scrollIntoView() {
 
-    this.toggle.querySelector(`input[value="${this.value}"]`).scrollIntoView();
+    this.toggle.querySelector(`input[value="${this.value}"]`).scrollIntoView({block: 'center'});
     return this;
 
   };
@@ -366,10 +366,6 @@ class Sequencer extends DisplayObject {
       'hats-open': '/audio/hats-open.mp3',
       'clap': '/audio/clap.mp3',
       'clave': '/audio/clave.mp3',
-      // 'tom-low': '',
-      // 'tom-high': '',
-      // 'crash': '',
-      // 'ride': '',
     });
     this.storage = new Storage('me.jamesrock.seq');
     this.keys = this.sounds.keys;
@@ -432,12 +428,7 @@ class Sequencer extends DisplayObject {
       if(this.playing) {
         this.stop();
         this.toggleButtons();
-        if(this.parts > 1) {
-          this.flashPart(1.5);
-        }
-        else {
-          this.resetPartAddButton();
-        };
+        this.flashPart(1.5);
       }
       else {
         this.start();
@@ -505,20 +496,19 @@ class Sequencer extends DisplayObject {
 
       this.applyInstrument();
 
-      this.part ++;
-      this.parts ++;
+      this.parts = this.instrument.steps.length/16;
+      this.part = this.parts - 1;
       this.steps.setPart(this.part);
       this.toggleButtons();
+      this.flashLength();
 
     });
 
     this.partNextButton.addEventListener('click', () => {
-
       this.part ++;
       this.steps.setPart(this.part);
       this.toggleButtons();
       this.flashPart();
-
     });
 
     this.toggleButtons();
@@ -692,7 +682,7 @@ class Sequencer extends DisplayObject {
     const pattern = saved[patternId];
     this.bpm = pattern[1];
     this.bpmSelect.setValue(pattern[1]);
-    this.instruments = pattern[2].map((steps, index) => new Instrument(this.keys[index], steps));
+    this.instruments = pattern[2].map((steps, index) => new Instrument(this, this.keys[index], steps));
     this.sounds.mixer = toMixer(this.keys, pattern[3]);
     this.storage.set('pattern', patternId);
     this.reset();
@@ -771,6 +761,20 @@ class Sequencer extends DisplayObject {
     return this;
 
   };
+  flashLength(duration = 1) {
+
+    this.partAddButton.disabled = true;
+    this.partAddButton.innerText = this.instrument.steps.length;
+
+    clearTimeout(this.flashTimeout);
+
+    this.flashTimeout = setTimeout(() => {
+      this.resetPartAddButton();
+    }, duration*1000);
+
+    return this;
+
+  };
   resetPartAddButton() {
 
     this.partAddButton.innerText = '+16';
@@ -792,7 +796,7 @@ class Sequencer extends DisplayObject {
   };
   makeInstruments() {
 
-    return this.keys.map((name) => new Instrument(name));
+    return this.keys.map((name) => new Instrument(this, name));
 
   };
   reset() {
@@ -829,8 +833,9 @@ class Sequencer extends DisplayObject {
 };
 
 class Instrument {
-  constructor(name, steps = makeArray(16, () => 0)) {
+  constructor(seq, name, steps = makeArray(16, () => 0)) {
 
+    this.seq = seq;
     this.name = name;
     this.steps = steps;
 
@@ -843,7 +848,10 @@ class Instrument {
   };
   addPart() {
 
-    const copy = this.steps.slice(this.steps.length-16);
+    const start = (this.seq.part)*16;
+    const end = start+16;
+
+    const copy = this.steps.slice(start, end);
     this.steps = this.steps.concat(copy);
 
   };

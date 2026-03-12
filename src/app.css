@@ -372,6 +372,9 @@ a {
     overflow-y: auto;
     overflow-x: hidden;
     padding-right: 15px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    mask-image: linear-gradient(rgba(0,0,0,0), rgba(0,0,0,1) 10%, rgba(0,0,0,1) 90%, rgba(0,0,0,0));
   }
 
 }
