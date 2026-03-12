@@ -347,7 +347,6 @@ class Sequencer extends DisplayObject {
       }
       else {
         this.start();
-        this.toggleButtons();
       };
 
     });
@@ -470,20 +469,23 @@ class Sequencer extends DisplayObject {
 
     if(this.queued && this.currentStep === 0) {
       this.queued = false;
+      this.setProp('queued', this.queued);
       this.stop();
       this.patternChangeHandler();
-      this.setProp('queued', this.queued);
+      this.start();
+      return;
     };
 
     this.steps.flash(this.currentStep);
 
     this.play(this.currentStep);
 
-    if(this.parts > 1 && this.currentStep % 16 === 0) {
+    if(this.currentStep % 16 === 0) {
       const part = ceilTo((this.currentStep+1)/16);
       this.steps.setPart(part-1);
       this.part = part-1;
       this.partAddButton.innerText = part;
+      this.toggleButtons();
     };
 
     if(this.currentStep === (this.instrument.steps.length - 1)) {
@@ -579,6 +581,7 @@ class Sequencer extends DisplayObject {
 
       existing[patternId] = this.getPatternData(pattern[0]);
       this.storage.set('patterns', existing);
+      this.storage.set('pattern', patternId);
 
     }
     else {
@@ -589,15 +592,16 @@ class Sequencer extends DisplayObject {
 
       const saved = [...existing, this.getPatternData(name)];
       this.storage.set('patterns', saved);
+      this.storage.set('pattern', saved.length - 1);
 
     };
 
-    this.renderPatternSelect(true);
+    this.renderPatternSelect();
 
     return this;
 
   };
-  renderPatternSelect(refresh = false) {
+  renderPatternSelect() {
 
     if(this.patternSelect) {
       this.patternSelect.destroy();
@@ -605,7 +609,7 @@ class Sequencer extends DisplayObject {
 
     const saved = this.storage.get('patterns');
     const items = saved.map(([name, bpm], index) => [`${limitChars(name)} ${bpm}`, index]);
-    const defaultValue = refresh ? (saved.length - 1) : this.storage.get('pattern');
+    const defaultValue = this.storage.get('pattern');
 
     if(tiny) {
       this.patternSelect = new ToggleFallback(items, defaultValue);
