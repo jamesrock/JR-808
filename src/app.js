@@ -63,7 +63,7 @@ const toMixer = (keys, saved) => {
 };
 
 const limitChars = (name, max = 12) => {
-  return name.length > max ? `${name.split('').splice(0, max).join('')}...` : name;
+  return name.length > max ? `${name.split('').splice(0, max).join('').trim()}...` : name;
 };
 
 const addInputListeners = (nodes, listener) => {
@@ -102,6 +102,8 @@ export class SoundManager {
     this.buffers = {};
     this.mixer = {};
     this.keys = Object.keys(this.sounds);
+
+    this.listenForStateChange();
 
   };
   async load() {
@@ -151,6 +153,17 @@ export class SoundManager {
   pan(sound, value) {
 
     this.mixer[sound][1] = value;
+    return this;
+
+  };
+  listenForStateChange() {
+
+    this.context.addEventListener('statechange', async () => {
+      if(this.context.state === 'suspended') {
+        await this.context.resume();
+      };
+    });
+
     return this;
 
   };

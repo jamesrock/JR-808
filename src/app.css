@@ -365,10 +365,12 @@ a {
 }
 
 .patterns {
+  width: var(--sliders-size);
 
   .toggle {
     max-height: 120px;
-    overflow: auto;
+    overflow-y: auto;
+    overflow-x: hidden;
     padding-right: 15px;
   }
 
