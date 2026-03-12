@@ -411,3 +411,80 @@ select {
   }
 
 }
+
+.prompt,
+.confirm {
+  background-color: white;
+  padding: 25px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: var(--background);
+  border-radius: 10px;
+  box-shadow: 0 0 10px black;
+
+  .prompt-head,
+  .confirm-head {
+    font-weight: 700;
+    font-size: 20px;
+    line-height: 1;
+    white-space: nowrap;
+    text-align: center;
+  }
+
+  .prompt-body,
+  .confirm-body {
+    font-size: 18px;
+    padding-top: 20px;
+
+    input[type="text"] {
+      padding: 10px;
+      font-size: inherit;
+      border: solid 1px grey;
+      font-family: inherit;
+      font-weight: inherit;
+      width: 100%;
+      box-sizing: border-box;
+      border-radius: 4px;
+    }
+  }
+
+  .prompt-foot,
+  .confirm-foot {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    padding-top: 20px;
+  }
+
+  button {
+    padding: 10px 20px;
+    border: 0;
+    border-radius: 5px;
+    background-color: var(--red);
+    color: white;
+    font-family: inherit;
+    font-size: inherit;
+    font-weight: 800;
+    min-width: 80px;
+    cursor: pointer;
+  }
+}
+
+.confirm-overlay,
+.prompt-overlay {
+  backdrop-filter: blur(2px);
+  position: fixed;
+  inset: 0;
+
+  &[data-hidden="true"] {
+    display: none;
+  }
+
+}
+
+.prompt {
+  width: calc(100% - 80px);
+  box-sizing: border-box;
+}

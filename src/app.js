@@ -262,6 +262,116 @@ class Slider extends DisplayObject {
   };
 };
 
+class Interaction extends DisplayObject {
+  constructor() {
+
+    super();
+
+  };
+  on(event, handler) {
+
+    this.addEventListener(event, handler);
+
+  };
+  hide() {
+
+    this.setProp('hidden', true);
+
+  };
+};
+
+class Prompt extends Interaction {
+  constructor(body = '{body}') {
+
+    super();
+
+    this.node = makeNode('div', 'prompt-overlay');
+    this.promptNode = makeNode('div', 'prompt');
+    this.headNode = makeNode('div', 'prompt-head');
+    this.bodyNode = makeNode('div', 'prompt-body');
+    this.footNode = makeNode('div', 'confirm-foot');
+    this.acceptButton = makeButton('ok', 'yes');
+    this.rejectButton = makeButton('cancel', 'no');
+    this.input = makeInput('', 'text');
+
+    this.headNode.innerText = body;
+
+    append(this.promptNode)(this.headNode)(this.bodyNode)(this.footNode);
+    append(this.footNode)(this.acceptButton)(this.rejectButton);
+    append(this.bodyNode)(this.input);
+    append(this.node)(this.promptNode);
+
+    this.acceptButton.addEventListener('click', () => {
+      this.hide();
+      this.dispatchEvent('accept');
+    });
+
+    this.rejectButton.addEventListener('click', () => {
+      this.hide();
+      this.dispatchEvent('reject');
+    });
+
+  };
+  getValue() {
+
+    return this.input.value;
+
+  };
+};
+
+class Confirm extends Interaction {
+  constructor(body = '{body}') {
+
+    super();
+
+    this.node = makeNode('div', 'confirm-overlay');
+    this.confirmNode = makeNode('div', 'confirm');
+    this.headNode = makeNode('div', 'confirm-head');
+    this.footNode = makeNode('div', 'confirm-foot');
+    this.acceptButton = makeButton('yes', 'yes');
+    this.rejectButton = makeButton('no', 'no');
+
+    this.headNode.innerText = body;
+
+    append(this.footNode)(this.acceptButton)(this.rejectButton);
+    append(this.confirmNode)(this.headNode)(this.footNode);
+    append(this.node)(this.confirmNode);
+
+    this.acceptButton.addEventListener('click', () => {
+      this.hide();
+      this.dispatchEvent('accept');
+    });
+
+    this.rejectButton.addEventListener('click', () => {
+      this.hide();
+      this.dispatchEvent('reject');
+    });
+
+  };
+};
+
+class InteractionFactory {
+  constructor(target) {
+
+    this.target = target;
+
+  };
+  prompt(body) {
+
+    const p = new Prompt(body);
+    appendTo(this.target)(p);
+    return p;
+
+  };
+  confirm(body) {
+
+    const c = new Confirm(body);
+    appendTo(this.target)(c);
+    return c;
+
+  };
+};
+
 class Sequencer extends DisplayObject {
   constructor() {
 
@@ -389,23 +499,19 @@ class Sequencer extends DisplayObject {
 
     this.patternClearButton.addEventListener('click', () => {
 
-      if(!confirm('clear pattern?')) {
-        return;
-      };
-
-      this.instruments = this.makeInstruments();
-      this.reset();
+      interaction.confirm('clear pattern?').on('accept', () => {
+        this.instruments = this.makeInstruments();
+        this.reset();
+      });
 
     });
 
     this.instrumentClearButton.addEventListener('click', () => {
 
-      if(!confirm('clear instrument?')) {
-        return;
-      };
-
-      this.instrument.clear();
-      this.applyInstrument();
+      interaction.confirm('clear instrument?').on('accept', () => {
+        this.instrument.clear();
+        this.applyInstrument();
+      });
 
     });
 
@@ -544,9 +650,9 @@ class Sequencer extends DisplayObject {
     const existing = this.storage.get('patterns');
     const patternId = this.patternSelect.getValue();
     const pattern = existing[patternId];
-    const overwrite = confirm(`overwrite pattern '${pattern[0]}'?`);
+    const overwrite = interaction.confirm(`overwrite pattern '${pattern[0]}'?`);
 
-    if(overwrite) {
+    overwrite.on('accept', () => {
 
       existing[patternId] = this.getPatternData(pattern[0]);
       this.storage.set('patterns', existing);
@@ -554,20 +660,23 @@ class Sequencer extends DisplayObject {
 
       this.patternSelect.updateItemLabel(patternId, `${limitChars(existing[patternId][0])} ${existing[patternId][1]}`);
 
-    }
-    else {
+    });
 
-      const name = prompt('new pattern name?');
+    overwrite.on('reject', () => {
 
-      if(!name) {return};
+      const name = interaction.prompt('new pattern name?');
 
-      const saved = [...existing, this.getPatternData(name)];
-      this.storage.set('patterns', saved);
-      this.storage.set('pattern', saved.length - 1);
+      name.on('accept', () => {
 
-      this.renderPatternSelect();
+        const saved = [...existing, this.getPatternData(name.getValue())];
+        this.storage.set('patterns', saved);
+        this.storage.set('pattern', saved.length - 1);
 
-    };
+        this.renderPatternSelect();
+
+      });
+
+    });
 
     return this;
 
@@ -972,13 +1081,7 @@ class Step extends DisplayObject {
   visible = false;
 };
 
-class Channel {
-  constructor(instruments, modifiers) {
-    this.instruments = instruments;
-    this.modifiers = modifiers;
-  };
-};
-
+const interaction = new InteractionFactory(document.body);
 const tiny = !minWidth(376);
 const gutter = tiny ? 15 : 25;
 const gap = 4;

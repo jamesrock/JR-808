@@ -34,3 +34,10 @@ export const setupChannelStrips = () => {
   ];
 
 };
+
+class Channel {
+  constructor(instruments, modifiers) {
+    this.instruments = instruments;
+    this.modifiers = modifiers;
+  };
+};
