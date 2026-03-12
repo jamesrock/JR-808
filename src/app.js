@@ -229,7 +229,7 @@ class Slider extends DisplayObject {
   setValue(value) {
 
     this.slider.value = value;
-    this.inputHandler();
+    this.dispatchEvent('input');
     return this;
 
   };
@@ -680,7 +680,6 @@ class Sequencer extends DisplayObject {
     const saved = this.storage.get('patterns');
     const patternId = this.patternSelect.getValue();
     const pattern = saved[patternId];
-    this.bpm = pattern[1];
     this.bpmSelect.setValue(pattern[1]);
     this.instruments = pattern[2].map((steps, index) => new Instrument(this, this.keys[index], steps));
     this.sounds.mixer = toMixer(this.keys, pattern[3]);

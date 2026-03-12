@@ -372,8 +372,8 @@ a {
     overflow-y: auto;
     overflow-x: hidden;
     padding-right: 15px;
-    padding-top: 10px;
-    padding-bottom: 10px;
+    padding-top: 12px;
+    padding-bottom: 12px;
     mask-image: linear-gradient(rgba(0,0,0,0), rgba(0,0,0,1) 10%, rgba(0,0,0,1) 90%, rgba(0,0,0,0));
   }
 
@@ -384,20 +384,6 @@ a {
   @media (max-width: 375px) {
     display: none;
   }
-}
-
-select {
-  width: 100%;
-  appearance: none;
-  background-color: var(--red);
-  background-image: radial-gradient(rgba(0,0,0,0.15), rgba(0,0,0,0.15));
-  color: white;
-  border: solid 2px black;
-  padding: 5px 15px;
-  font-size: inherit;
-  font-family: inherit;
-  border-radius: 5px;
-  font-weight: inherit;
 }
 
 .fallbacks {
@@ -411,6 +397,20 @@ select {
 
   @media (min-width: 376px) {
     display: none;
+  }
+
+  select {
+    width: 100%;
+    appearance: none;
+    background-color: var(--red);
+    background-image: radial-gradient(rgba(0,0,0,0.15), rgba(0,0,0,0.15));
+    color: white;
+    border: solid 2px black;
+    padding: 5px 15px;
+    font-size: inherit;
+    font-family: inherit;
+    border-radius: 5px;
+    font-weight: inherit;
   }
 
 }
@@ -457,7 +457,7 @@ select {
   .prompt-foot,
   .confirm-foot {
     display: flex;
-    gap: 15px;
+    gap: 20px;
     justify-content: center;
     padding-top: 20px;
   }
@@ -465,7 +465,7 @@ select {
   button {
     padding: 10px 20px;
     border: 0;
-    border-radius: 5px;
+    border-radius: 8px;
     background-color: var(--red);
     color: white;
     font-family: inherit;
@@ -473,6 +473,7 @@ select {
     font-weight: 800;
     min-width: 80px;
     cursor: pointer;
+    text-transform: uppercase;
   }
 }
 
