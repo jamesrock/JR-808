@@ -271,11 +271,28 @@ class Interaction extends DisplayObject {
   on(event, handler) {
 
     this.addEventListener(event, handler);
+    return this;
 
   };
   hide() {
 
     this.setProp('hidden', true);
+    return this;
+
+  };
+  addListeners() {
+
+    this.acceptButton.addEventListener('click', () => {
+      this.hide();
+      this.dispatchEvent('accept');
+    });
+
+    this.rejectButton.addEventListener('click', () => {
+      this.hide();
+      this.dispatchEvent('reject');
+    });
+
+    return this;
 
   };
 };
@@ -301,15 +318,7 @@ class Prompt extends Interaction {
     append(this.bodyNode)(this.input);
     append(this.node)(this.promptNode);
 
-    this.acceptButton.addEventListener('click', () => {
-      this.hide();
-      this.dispatchEvent('accept');
-    });
-
-    this.rejectButton.addEventListener('click', () => {
-      this.hide();
-      this.dispatchEvent('reject');
-    });
+    this.addListeners();
 
   };
   getValue() {
@@ -337,15 +346,7 @@ class Confirm extends Interaction {
     append(this.confirmNode)(this.headNode)(this.footNode);
     append(this.node)(this.confirmNode);
 
-    this.acceptButton.addEventListener('click', () => {
-      this.hide();
-      this.dispatchEvent('accept');
-    });
-
-    this.rejectButton.addEventListener('click', () => {
-      this.hide();
-      this.dispatchEvent('reject');
-    });
+    this.addListeners();
 
   };
 };
@@ -498,30 +499,24 @@ class Sequencer extends DisplayObject {
     });
 
     this.patternClearButton.addEventListener('click', () => {
-
       interaction.confirm('clear pattern?').on('accept', () => {
         this.instruments = this.makeInstruments();
         this.reset();
       });
-
     });
 
     this.instrumentClearButton.addEventListener('click', () => {
-
       interaction.confirm('clear instrument?').on('accept', () => {
         this.instrument.clear();
         this.applyInstrument();
       });
-
     });
 
     this.partPrevButton.addEventListener('click', () => {
-
       this.part --;
       this.steps.setPart(this.part);
       this.toggleButtons();
       this.flashPart();
-
     });
 
     this.partAddButton.addEventListener('click', () => {
