@@ -594,9 +594,9 @@ class Sequencer extends DisplayObject {
       this.storage.set('patterns', saved);
       this.storage.set('pattern', saved.length - 1);
 
-    };
+      this.renderPatternSelect();
 
-    this.renderPatternSelect();
+    };
 
     return this;
 
