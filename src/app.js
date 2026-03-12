@@ -645,7 +645,7 @@ class Sequencer extends DisplayObject {
     const existing = this.storage.get('patterns');
     const patternId = this.patternSelect.getValue();
     const pattern = existing[patternId];
-    const overwrite = interaction.confirm(`overwrite pattern '${pattern[0]}'?`);
+    const overwrite = interaction.confirm(`overwrite '${pattern[0]}'?`);
 
     overwrite.on('accept', () => {
 

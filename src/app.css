@@ -422,7 +422,8 @@ select {
   transform: translate(-50%, -50%);
   color: var(--background);
   border-radius: 10px;
-  box-shadow: 0 0 10px black;
+  box-shadow: 0 0 20px black;
+  border: solid 2px black;
 
   .prompt-head,
   .confirm-head {
@@ -474,7 +475,7 @@ select {
 
 .confirm-overlay,
 .prompt-overlay {
-  backdrop-filter: blur(2px);
+  background-color: rgba(0, 0, 0, 0.5);
   position: fixed;
   inset: 0;
 
