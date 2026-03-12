@@ -9,11 +9,14 @@ import {
   makeButton,
   makeNode,
   makeToggle,
+  makeSlider,
   getXAsPercentOfY,
   floorTo,
   ceilTo,
   limit,
-  minWidth
+  minWidth,
+  append,
+  appendTo,
 } from '@jamesrock/rockjs';
 
 setDocumentHeight();
@@ -45,15 +48,6 @@ const tap = (base) => {
 
 };
 
-const makeSlider = (value, min, max, step = 1) => {
-  const node = makeInput(0, 'range');
-  node.min = min;
-  node.max = max;
-  node.step = step;
-  node.value = value;
-  return node;
-};
-
 const toMixer = (keys, saved) => {
   const out = {};
   saved.forEach((item, index) => {
@@ -76,22 +70,6 @@ const addInputListeners = (nodes, listener) => {
 
   return nodes;
 
-};
-
-const append = (target) => {
-  const fn = (node) => {
-    target.appendChild(node);
-    return fn;
-  };
-  return fn;
-};
-
-const appendTo = (target) => {
-  const fn = (node) => {
-    node.appendTo(target);
-    return fn;
-  };
-  return fn;
 };
 
 export class SoundManager {
