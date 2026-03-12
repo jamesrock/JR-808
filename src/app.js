@@ -191,6 +191,12 @@ class Toggle extends DisplayObject {
     return Number(data.get(this.name));
 
   };
+  updateItemLabel(value, label) {
+
+    this.toggle.querySelector(`label[for="${this.name}-${value}"]`).innerText = label;
+    return this;
+
+  };
   scrollIntoView() {
 
     this.toggle.querySelector(`input[value="${this.value}"]`).scrollIntoView();
@@ -545,6 +551,8 @@ class Sequencer extends DisplayObject {
       existing[patternId] = this.getPatternData(pattern[0]);
       this.storage.set('patterns', existing);
       this.storage.set('pattern', patternId);
+
+      this.patternSelect.updateItemLabel(patternId, `${limitChars(existing[patternId][0])} ${existing[patternId][1]}`);
 
     }
     else {
