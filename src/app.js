@@ -279,7 +279,7 @@ class Sequencer extends DisplayObject {
     });
     this.storage = new Storage('me.jamesrock.seq');
     this.keys = this.sounds.keys;
-    this.instruments = this.keys.map((name) => new Instrument(name));
+    this.instruments = this.makeInstruments();
     this.instrumentSelect = this.makeInstrumentSelect();
 
     this.startButton = makeButton('start');
@@ -383,11 +383,8 @@ class Sequencer extends DisplayObject {
         return;
       };
 
-      this.instruments.forEach((inst) => {
-        inst.clear();
-      });
-
-      this.applyInstrument();
+      this.instruments = this.makeInstruments();
+      this.reset();
 
     });
 
@@ -645,13 +642,8 @@ class Sequencer extends DisplayObject {
     this.bpmSelect.setValue(pattern[1]);
     this.instruments = pattern[2].map((steps, index) => new Instrument(this.keys[index], steps));
     this.sounds.mixer = toMixer(this.keys, pattern[3]);
-    this.instrument = this.instruments[this.instrumentSelect.getValue()];
-    this.part = 0;
-    this.parts = this.instrument.steps.length/16;
-    this.steps.setPart(0);
     this.storage.set('pattern', patternId);
-    this.applyInstrument();
-    this.toggleButtons();
+    this.reset();
 
   };
   applyInstrument() {
@@ -740,6 +732,22 @@ class Sequencer extends DisplayObject {
     else {
       return new Toggle(items, 'instrument', 0, 'instruments', 'Instrument');
     };
+
+  };
+  makeInstruments() {
+
+    return this.keys.map((name) => new Instrument(name));
+
+  };
+  reset() {
+
+    this.instrument = this.instruments[this.instrumentSelect.getValue()];
+    this.parts = this.instrument.steps.length/16;
+    this.part = 0;
+    this.steps.setPart(0);
+    this.applyInstrument();
+    this.toggleButtons();
+    return this;
 
   };
   playing = false;
