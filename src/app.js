@@ -337,11 +337,17 @@ class Sequencer extends DisplayObject {
 
       if(this.playing) {
         this.stop();
-        this.startButton.innerText = 'start';
+        this.toggleButtons();
+        if(this.parts > 1) {
+          this.flashPart(1.5);
+        }
+        else {
+          this.resetPartAddButton();
+        };
       }
       else {
         this.start();
-        this.startButton.innerText = 'stop';
+        this.toggleButtons();
       };
 
     });
@@ -473,9 +479,7 @@ class Sequencer extends DisplayObject {
 
     this.play(this.currentStep);
 
-    this.toggleButtons();
-
-    if(this.currentStep % 16 === 0) {
+    if(this.parts > 1 && this.currentStep % 16 === 0) {
       const part = ceilTo((this.currentStep+1)/16);
       this.steps.setPart(part-1);
       this.part = part-1;
@@ -501,15 +505,6 @@ class Sequencer extends DisplayObject {
     this.playing = false;
     this.currentStep = 0;
     this.steps.clear();
-
-    this.toggleButtons();
-
-    if(this.parts>1) {
-      this.flashPart(1.5);
-    }
-    else {
-      this.resetPartAddButton();
-    };
 
     clearTimeout(this.timer);
 
@@ -669,7 +664,11 @@ class Sequencer extends DisplayObject {
       this.partPrevButton.disabled = true;
       this.partAddButton.disabled = true;
       this.partNextButton.disabled = true;
+      this.startButton.innerText = 'stop';
       return;
+    }
+    else {
+      this.startButton.innerText = 'start';
     };
 
     this.partPrevButton.disabled = false;
