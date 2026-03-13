@@ -2,6 +2,8 @@ import '/app.css';
 import {
   Storage,
   DisplayObject,
+  SoundManager,
+  Tempo,
   setDocumentHeight,
   makeSelect,
   makeArray,
@@ -20,33 +22,6 @@ import {
 } from '@jamesrock/rockjs';
 
 setDocumentHeight();
-
-let taps = [];
-
-const tap = (base) => {
-
-  const now = performance.now();
-  taps.push(now);
-
-  if(taps.length > 1 && now - taps[taps.length - 2] > 2000) {
-    taps = [now];
-    return base;
-  };
-
-  if(taps.length < 2) return base;
-
-  if(taps.length > 10) taps.shift();
-
-  const intervals = [];
-  for(let i = 1; i < taps.length; i++) {
-    intervals.push(taps[i] - taps[i - 1]);
-  };
-
-  const averageInterval = intervals.reduce((a, b) => a + b) / intervals.length;
-
-  return floorTo(60000 / averageInterval);
-
-};
 
 const toMixer = (keys, saved) => {
   const out = {};
@@ -70,81 +45,6 @@ const addInputListeners = (nodes, listener) => {
 
   return nodes;
 
-};
-
-export class SoundManager {
-  constructor(sounds) {
-
-    this.context = new AudioContext();
-    this.sounds = sounds;
-    this.buffers = {};
-    this.mixer = {};
-    this.keys = Object.keys(this.sounds);
-
-    this.listenForStateChange();
-
-  };
-  async load() {
-
-    return Promise.all(this.keys.map((key) => this.loadBuffer(key, this.sounds[key]))).then((items) => {
-      items.forEach(([name, buffer]) => {
-        this.buffers[name] = buffer;
-        this.mixer[name] = [0.5, 0];
-      });
-    });
-
-  };
-  async loadBuffer(name, path) {
-
-    const response = await fetch(path);
-    const arrayBuffer = await response.arrayBuffer();
-    const audioBuffer = await this.context.decodeAudioData(arrayBuffer);
-    return [name, audioBuffer];
-
-  };
-  play(sound = 'point') {
-
-    if(!this.buffers[sound]) {
-      console.log(`SoundManager: '${sound}' not loaded!`);
-      return;
-    };
-
-    const source = this.context.createBufferSource();
-    const gainer = this.context.createGain();
-    const panner = this.context.createStereoPanner();
-
-    source.buffer = this.buffers[sound];
-    gainer.gain.value = this.mixer[sound][0];
-    panner.pan.value = this.mixer[sound][1];
-
-    source.connect(gainer).connect(panner).connect(this.context.destination);
-
-    source.start();
-
-  };
-  volume(sound, value) {
-
-    this.mixer[sound][0] = value;
-    return this;
-
-  };
-  pan(sound, value) {
-
-    this.mixer[sound][1] = value;
-    return this;
-
-  };
-  listenForStateChange() {
-
-    this.context.addEventListener('statechange', async () => {
-      if(this.context.state === 'suspended') {
-        await this.context.resume();
-      };
-    });
-
-    return this;
-
-  };
 };
 
 class Toggle extends DisplayObject {
@@ -246,12 +146,6 @@ class Interaction extends DisplayObject {
     super();
 
   };
-  on(event, handler) {
-
-    this.addEventListener(event, handler);
-    return this;
-
-  };
   hide() {
 
     this.setProp('hidden', true);
@@ -261,13 +155,13 @@ class Interaction extends DisplayObject {
   addListeners() {
 
     this.acceptButton.addEventListener('click', () => {
-      this.hide();
       this.dispatchEvent('accept');
+      this.hide();
     });
 
     this.rejectButton.addEventListener('click', () => {
-      this.hide();
       this.dispatchEvent('reject');
+      this.hide();
     });
 
     return this;
@@ -464,7 +358,7 @@ class Sequencer extends DisplayObject {
     });
 
     this.tapButton.addEventListener('click', () => {
-      this.bpmSelect.setValue(tap(this.bpmSelect.getValue()));
+      this.bpmSelect.setValue(tempo.tap());
     });
 
     this.patternClearButton.addEventListener('click', () => {
@@ -1062,6 +956,7 @@ class Step extends DisplayObject {
 };
 
 const interaction = new InteractionFactory(document.body);
+const tempo = new Tempo();
 const tiny = !minWidth(376);
 const gutter = tiny ? 15 : 25;
 const gap = 4;
