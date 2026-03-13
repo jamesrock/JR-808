@@ -3,6 +3,7 @@ import {
   Storage,
   DisplayObject,
   SoundManager,
+  Toggle as ToggleBase,
   Tempo,
   setDocumentHeight,
   makeSelect,
@@ -47,38 +48,13 @@ const addInputListeners = (nodes, listener) => {
 
 };
 
-class Toggle extends DisplayObject {
-  constructor(items, name = '{name}', value, className, title = '{title}') {
+class Toggle extends ToggleBase {
+  constructor(items, name = '{name}', initialValue, className, title = '{title}') {
 
-    super();
+    super(items, name, initialValue, className);
 
-    this.node = makeNode('form', className);
-    this.name = name;
-    this.value = value;
     this.title = title;
-    this.toggle = makeToggle(items, name, value);
-
-    append(this.node)(this.toggle);
-
     this.setProp('title', title);
-
-  };
-  getValue() {
-
-    const data = new FormData(this.node);
-    return Number(data.get(this.name));
-
-  };
-  updateItemLabel(value, label) {
-
-    this.toggle.querySelector(`label[for="${this.name}-${value}"]`).innerText = label;
-    return this;
-
-  };
-  scrollIntoView() {
-
-    this.toggle.querySelector(`input[value="${this.value}"]`).scrollIntoView({block: 'center'});
-    return this;
 
   };
 };
@@ -505,7 +481,7 @@ class Sequencer extends DisplayObject {
   save() {
 
     const existing = this.storage.get('patterns');
-    const patternId = this.patternSelect.getValue();
+    const patternId = this.patternSelect.getValueAsNumber();
     const pattern = existing[patternId];
     const overwrite = interaction.confirm(`overwrite '${pattern[0]}'?`);
 
@@ -572,7 +548,7 @@ class Sequencer extends DisplayObject {
     };
 
     const saved = this.storage.get('patterns');
-    const patternId = this.patternSelect.getValue();
+    const patternId = this.patternSelect.getValueAsNumber();
     const pattern = saved[patternId];
     this.bpmSelect.setValue(pattern[1]);
     this.instruments = pattern[2].map((steps, index) => new Instrument(this, this.keys[index], steps));
@@ -694,7 +670,7 @@ class Sequencer extends DisplayObject {
   };
   reset() {
 
-    this.instrument = this.instruments[this.instrumentSelect.getValue()];
+    this.instrument = this.instruments[this.instrumentSelect.getValueAsNumber()];
     this.parts = this.instrument.steps.length/16;
     this.part = 0;
     this.steps.setPart(0);
