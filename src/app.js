@@ -230,8 +230,8 @@ class Sequencer extends DisplayObject {
     this.sounds = new SoundManager({
       'kick': '/audio/kick.mp3',
       'snare': '/audio/snare.mp3',
-      'hats-closed': '/audio/hats-closed.mp3',
-      'hats-open': '/audio/hats-open.mp3',
+      'hats-cl': '/audio/hats-cl.mp3',
+      'hats-op': '/audio/hats-op.mp3',
       'crash': '/audio/crash.mp3',
       'sidestick': '/audio/sidestick.mp3',
       'tom-lo': '/audio/tom-lo.mp3',
@@ -266,7 +266,6 @@ class Sequencer extends DisplayObject {
     this.keys = this.sounds.keys;
     this.instruments = this.makeInstruments();
     this.steps = new Steps(this);
-    this.instrumentSelect = this.makeInstrumentSelect();
     this.storage = new Storage('me.jamesrock.seq');
 
     this.startButton = makeButton('start');
@@ -314,16 +313,10 @@ class Sequencer extends DisplayObject {
     if(tiny) {
       appendTo(this.fallbacksNode)(this.bpmSelect)(this.panningSelect)(this.volumeSelect);
       append(this.fallbacksNode)(this.patternsFallbackNode);
-      appendTo(this.fallbacksNode)(this.instrumentSelect);
     };
 
     addInputListeners([this.bpmSelect], (value) => {
       this.bpm = value;
-    });
-
-    addInputListeners([this.instrumentSelect], (value) => {
-      this.instrument = this.instruments[value];
-      this.applyInstrument();
     });
 
     addInputListeners([this.panningSelect], (value) => {
@@ -358,7 +351,7 @@ class Sequencer extends DisplayObject {
     });
 
     this.instButton.addEventListener('click', () => {
-      this.enableSelectMode();
+      this.toggleSelectMode();
     });
 
     this.tapButton.addEventListener('click', () => {
@@ -409,6 +402,7 @@ class Sequencer extends DisplayObject {
       this.flashPart();
     });
 
+    this.disableSelectMode();
     this.toggleButtons();
 
     if(!this.storage.get('patterns')) {
@@ -681,18 +675,6 @@ class Sequencer extends DisplayObject {
     return this;
 
   };
-  makeInstrumentSelect() {
-
-    const items = this.keys.map((inst, index) => [inst, index]);
-
-    if(tiny) {
-      return new ToggleFallback(items, 0);
-    }
-    else {
-      return new Toggle(items, 'instrument', 0, 'instruments', 'Instrument');
-    };
-
-  };
   makeInstruments() {
 
     return this.keys.map((id, index) => new Instrument(this, id, this.labels[index]));
@@ -713,17 +695,39 @@ class Sequencer extends DisplayObject {
   enableSelectMode() {
 
     this.selectMode = true;
-    this.steps.showInstrumentLabels();
+    this.setProp('selectMode', this.selectMode);
+    this.steps.enableCurrentInstrument();
+    return this;
+
+  };
+  disableSelectMode() {
+
+    this.selectMode = false;
+    this.setProp('selectMode', this.selectMode);
+    return this;
+
+  };
+  toggleSelectMode() {
+
+    if(this.selectMode) {
+      this.disableSelectMode();
+    }
+    else {
+      this.enableSelectMode();
+    };
+
     return this;
 
   };
   setInstrument(inst) {
 
-    this.instrument = this.instruments[inst];
-    this.instButton.innerText = `inst: ${this.instrument.name}`;
-    this.steps.hideInstrumentLabels();
-    this.applyInstrument();
-    this.selectMode = false;
+    setTimeout(() => {
+      this.instrument = this.instruments[inst];
+      this.instButton.innerText = `inst: ${this.instrument.name}`;
+      this.disableSelectMode();
+      this.applyInstrument();
+    }, 1000);
+
     return this;
 
   };
@@ -823,6 +827,15 @@ class Steps extends DisplayObject {
     return this;
 
   };
+  disable() {
+
+    this.steps.forEach((step) => {
+      step.disable(true);
+    });
+
+    return this;
+
+  };
   flash(index) {
 
     this.clear();
@@ -866,6 +879,8 @@ class Steps extends DisplayObject {
       if(e.target?.classList.contains('step')) {
         if(this.seq.selectMode) {
           const step = this.steps[e.target.dataset.beat];
+          this.disable();
+          step.enable(true);
           this.seq.setInstrument(step.instrument);
         }
         else {
@@ -899,10 +914,9 @@ class Steps extends DisplayObject {
     return this;
 
   };
-  showInstrumentLabels() {
+  enableCurrentInstrument() {
 
     this.steps.forEach((step) => {
-      step.toggleInstrumentLabel();
       if(this.seq.playing) {return};
       if(step.instrumentId === this.seq.instrument.id) {
         step.enable(true);
@@ -910,14 +924,6 @@ class Steps extends DisplayObject {
       else {
         step.disable(true);
       };
-    });
-    return this;
-
-  };
-  hideInstrumentLabels() {
-
-    this.steps.forEach((step) => {
-      step.toggleInstrumentLabel();
     });
     return this;
 
@@ -948,7 +954,6 @@ class Step extends DisplayObject {
     this.setProp('visible', this.visible);
     this.setProp('beat', this.beat);
     this.setProp('label', this.label);
-    this.setProp('labelVisible', this.labelVisible);
 
   };
   flash() {
@@ -1010,17 +1015,9 @@ class Step extends DisplayObject {
     return this;
 
   };
-  toggleInstrumentLabel() {
-
-    this.labelVisible = !this.labelVisible;
-    this.setProp('labelVisible', this.labelVisible);
-    return this;
-
-  };
   enabled = false;
   active = false;
   visible = false;
-  labelVisible = false;
 };
 
 const interaction = new InteractionFactory(document.body);

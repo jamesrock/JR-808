@@ -130,18 +130,17 @@ button {
     font-size: 12px;
     font-weight: 800;
     text-transform: uppercase;
-    background-color: var(--white);
-    color: var(--background);
+    background-color: black;
+    color: white;
     padding: 4px 0;
     border-radius: 4px;
     pointer-events: none;
     letter-spacing: -0.25px;
+    word-spacing: 2px;
   }
 
-  &[data-label-visible="false"] {
-    &:after {
-      opacity: 0;
-    }
+  [data-select-mode="false"] &:after {
+    opacity: 0;
   }
 
   &.red {
@@ -166,6 +165,7 @@ button {
     height: 10px;
     outline: solid 4px rgba(0, 0, 0, 0.25);
     border-radius: 100%;
+    pointer-events: none;
 
     [data-active="true"] &,
     [data-enabled="true"] & {
@@ -364,18 +364,28 @@ button {
     flex-grow: 1;
     text-shadow: 0 0 5px rgba(0,0,0,0.25);
     background-image: radial-gradient(rgba(0,0,0,0.15), rgba(0,0,0,0.15));
+    transition: color .15s;
+
     &.tap {
-      font-size: 18px;
+      font-size: 2em;
     }
+
     &.inst {
       height: 56px;
       box-sizing: border-box;
       flex-grow: 0;
       font-size: 15px;
+
+      [data-select-mode="true"] & {
+        color: var(--yellow);
+      }
+
     }
+
     &.dir {
       font-size: 20px;
     }
+
     &.add {
       font-size: 15px;
       width: 60px;
