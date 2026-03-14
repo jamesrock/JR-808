@@ -832,8 +832,6 @@ class Steps extends DisplayObject {
   };
   applyInstrument() {
 
-    console.log(this.seq.instrument.steps);
-
     this.steps.forEach((step, index) => {
       if(this.seq.instrument.steps[index]) {
         step.enable(true);

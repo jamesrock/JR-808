@@ -76,6 +76,17 @@ a {
   text-decoration: none;
 }
 
+button {
+  -webkit-user-select: none;
+  user-select: none;
+  &[disabled] {
+    pointer-events: none;
+  }
+  &:active {
+    color: var(--yellow);
+  }
+}
+
 .step-sequencer {
   display: flex;
   flex-direction: column;
@@ -239,16 +250,9 @@ a {
       color: var(--yellow);
 
       &[disabled] {
-        pointer-events: none;
         color: white;
       }
-      &.dir {
-        font-size: 20px;
-      }
-      &.add {
-        font-size: 15px;
-        width: 60px;
-      }
+
     }
   }
 
@@ -360,19 +364,21 @@ a {
     flex-grow: 1;
     text-shadow: 0 0 5px rgba(0,0,0,0.25);
     background-image: radial-gradient(rgba(0,0,0,0.15), rgba(0,0,0,0.15));
-    -webkit-user-select: none;
-    user-select: none;
-    &:active {
-      color: var(--yellow);
-    }
     &.tap {
-      font-size: 20px;
+      font-size: 18px;
     }
     &.inst {
       height: 56px;
       box-sizing: border-box;
       flex-grow: 0;
       font-size: 15px;
+    }
+    &.dir {
+      font-size: 20px;
+    }
+    &.add {
+      font-size: 15px;
+      width: 60px;
     }
   }
 
