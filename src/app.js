@@ -20,6 +20,7 @@ import {
   append,
   appendTo,
 } from '@jamesrock/rockjs';
+import { presets } from './presets';
 
 setDocumentHeight();
 
@@ -226,24 +227,52 @@ class Sequencer extends DisplayObject {
     super();
 
     this.node = makeNode('div', 'step-sequencer');
-
-    this.steps = new Steps(this);
     this.sounds = new SoundManager({
       'kick': '/audio/kick.mp3',
       'snare': '/audio/snare.mp3',
       'hats-closed': '/audio/hats-closed.mp3',
       'hats-open': '/audio/hats-open.mp3',
+      'crash': '/audio/kick.mp3',
+      'sidestick': '/audio/kick.mp3',
+      'tom-lo': '/audio/kick.mp3',
+      'tom-hi': '/audio/kick.mp3',
+      'ride': '/audio/kick.mp3',
       'clap': '/audio/clap.mp3',
+      'conga-lo': '/audio/kick.mp3',
+      'conga-hi': '/audio/kick.mp3',
+      'tambo': '/audio/kick.mp3',
+      'cabasa': '/audio/kick.mp3',
+      'cowbell': '/audio/kick.mp3',
       'clave': '/audio/clave.mp3',
     });
-    this.storage = new Storage('me.jamesrock.seq');
+    this.labels = [
+      'kick',
+      'snare',
+      'hats cl',
+      'hats op',
+      'crash',
+      'sidestick',
+      'tom low',
+      'tom hi',
+      'ride',
+      'clap',
+      'conga lo',
+      'conga hi',
+      'tambo',
+      'cabasa',
+      'cowbell',
+      'clave',
+    ];
     this.keys = this.sounds.keys;
     this.instruments = this.makeInstruments();
+    this.steps = new Steps(this);
     this.instrumentSelect = this.makeInstrumentSelect();
+    this.storage = new Storage('me.jamesrock.seq');
 
     this.startButton = makeButton('start');
     this.saveButton = makeButton('store');
-    this.tapButton = makeButton('tap');
+    this.tapButton = makeButton('tap', 'tap');
+    this.instButton = makeButton('inst: kick', 'inst');
     this.patternClearButton = makeButton('clear\nptrn', 'clear');
     this.instrumentClearButton = makeButton('clear\ninst', 'clear');
     this.partPrevButton = makeButton('<', 'dir');
@@ -265,21 +294,18 @@ class Sequencer extends DisplayObject {
     this.buttonsNode = makeNode('div', 'buttons');
     this.buttonsTopNode = makeNode('div', 'buttons-top');
     this.buttonsBottomNode = makeNode('div', 'buttons-bottom');
-    this.buttonsLeftNode = makeNode('div', 'buttons-left');
-    this.buttonsRightNode = makeNode('div', 'buttons-right');
     this.slidersNode = makeNode('div', 'sliders');
     this.patternsNode = makeNode('div', 'patterns-target');
     this.patternsFallbackNode = makeNode('div', 'patterns-fallback-target');
 
     appendTo(this.slidersNode)(this.volumeSelect)(this.panningSelect)(this.bpmSelect);
-    append(this.buttonsLeftNode)(this.patternClearButton)(this.instrumentClearButton);
-    append(this.buttonsRightNode)(this.tapButton)(this.saveButton)(this.startButton);
     append(this.controllersTopNode)(this.patternsNode)(this.slidersNode);
-    appendTo(this.controllersBottomLeftNode)(this.instrumentSelect);
+    // appendTo(this.controllersBottomLeftNode)(this.instrumentSelect);
+    append(this.controllersBottomLeftNode)(this.tapButton)(this.instButton);
     append(this.controllersBottomLeftNode)(this.fallbacksNode);
     append(this.controllersBottomNode)(this.controllersBottomLeftNode)(this.controllersBottomRightNode);
     append(this.buttonsTopNode)(this.partPrevButton)(this.partAddButton)(this.partNextButton);
-    append(this.buttonsBottomNode)(this.buttonsLeftNode)(this.buttonsRightNode);
+    append(this.buttonsBottomNode)(this.patternClearButton)(this.saveButton)(this.instrumentClearButton)(this.startButton);
     append(this.buttonsNode)(this.buttonsTopNode)(this.buttonsBottomNode);
     append(this.controllersBottomRightNode)(this.buttonsNode);
     append(this.controllersNode)(this.controllersTopNode)(this.controllersBottomNode);
@@ -291,6 +317,29 @@ class Sequencer extends DisplayObject {
       append(this.fallbacksNode)(this.patternsFallbackNode);
       appendTo(this.fallbacksNode)(this.instrumentSelect);
     };
+
+    addInputListeners([this.bpmSelect], (value) => {
+      this.bpm = value;
+    });
+
+    addInputListeners([this.instrumentSelect], (value) => {
+      this.instrument = this.instruments[value];
+      this.applyInstrument();
+    });
+
+    addInputListeners([this.panningSelect], (value) => {
+      this.sounds.pan(this.instrument.id, value);
+    });
+
+    addInputListeners([this.volumeSelect], (value) => {
+      this.sounds.volume(this.instrument.id, value);
+    });
+
+    [this.patternsNode, this.patternsFallbackNode].forEach((node) => {
+      node.addEventListener('input', () => {
+        this.patternChangeHandler();
+      });
+    });
 
     this.startButton.addEventListener('click', () => {
 
@@ -309,27 +358,8 @@ class Sequencer extends DisplayObject {
       this.save();
     });
 
-    addInputListeners([this.bpmSelect], (value) => {
-      this.bpm = value;
-    });
-
-    addInputListeners([this.instrumentSelect], (value) => {
-      this.instrument = this.instruments[value];
-      this.applyInstrument();
-    });
-
-    addInputListeners([this.panningSelect], (value) => {
-      this.sounds.pan(this.instrument.name, value);
-    });
-
-    addInputListeners([this.volumeSelect], (value) => {
-      this.sounds.volume(this.instrument.name, value);
-    });
-
-    [this.patternsNode, this.patternsFallbackNode].forEach((node) => {
-      node.addEventListener('input', () => {
-        this.patternChangeHandler();
-      });
+    this.instButton.addEventListener('click', () => {
+      this.enableSelectMode();
     });
 
     this.tapButton.addEventListener('click', () => {
@@ -460,7 +490,7 @@ class Sequencer extends DisplayObject {
 
     this.instruments.forEach((inst) => {
       if(inst.steps[beat]) {
-        this.sounds.play(inst.name);
+        this.sounds.play(inst.id);
       };
     });
 
@@ -470,11 +500,13 @@ class Sequencer extends DisplayObject {
   enable(beat) {
 
     this.instrument.steps[beat] = 1;
+    return this;
 
   };
   disable(beat) {
 
     this.instrument.steps[beat] = 0;
+    return this;
 
   };
   save() {
@@ -550,7 +582,7 @@ class Sequencer extends DisplayObject {
     const patternId = this.patternSelect.getValueAsNumber();
     const pattern = saved[patternId];
     this.bpmSelect.setValue(pattern[1]);
-    this.instruments = pattern[2].map((steps, index) => new Instrument(this, this.keys[index], steps));
+    this.instruments = pattern[2].map((steps, index) => new Instrument(this, this.keys[index], this.labels[index], steps));
     this.sounds.mixer = toMixer(this.keys, pattern[3]);
     this.storage.set('pattern', patternId);
     this.reset();
@@ -560,7 +592,7 @@ class Sequencer extends DisplayObject {
 
     this.steps.applyInstrument();
 
-    const channel = this.sounds.mixer[this.instrument.name];
+    const channel = this.sounds.mixer[this.instrument.id];
 
     this.volumeSelect.setValue(channel[0]);
     this.panningSelect.setValue(channel[1]);
@@ -570,7 +602,7 @@ class Sequencer extends DisplayObject {
   };
   getPatternData(name) {
 
-    return [name, this.bpmSelect.getValue(), this.instruments.map((inst) => inst.steps), this.instruments.map((inst) => this.sounds.mixer[inst.name])]
+    return [name, this.bpmSelect.getValue(), this.instruments.map((inst) => inst.steps), this.instruments.map((inst) => this.sounds.mixer[inst.id])]
 
   };
   toggleButtons() {
@@ -664,7 +696,7 @@ class Sequencer extends DisplayObject {
   };
   makeInstruments() {
 
-    return this.keys.map((name) => new Instrument(this, name));
+    return this.keys.map((id, index) => new Instrument(this, id, this.labels[index]));
 
   };
   reset() {
@@ -678,6 +710,23 @@ class Sequencer extends DisplayObject {
     return this;
 
   };
+  enableSelectMode() {
+
+    this.selectMode = true;
+    this.steps.showInstrumentLabels();
+    return this;
+
+  };
+  setInstrument(inst) {
+
+    this.instrument = this.instruments[inst];
+    this.instButton.innerText = `inst: ${this.instrument.name}`;
+    this.steps.hideInstrumentLabels();
+    this.applyInstrument();
+    this.selectMode = false;
+    return this;
+
+  };
   playing = false;
   currentStep = 0;
   bpm = 120;
@@ -688,22 +737,18 @@ class Sequencer extends DisplayObject {
     '1/4': 60000
   };
   mode = '1/16';
-  presets = [
-    ["empty",120,[[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],[[0.5,0],[0.5,0],[0.5,0],[0.5,0],[0.5,0],[0.5,0]]],
-    ["bob",120,[[1,0,0,0,0,0,1,0,0,0,1,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0],[1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0]],[[0.5,0],[0.5,0],[0.5,0],[0.5,0],[0.5,0],[0.5,0]]],
-    ["eminem",120,[[1,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0],[0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0],[0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],[[0.5,0],[0.5,0],[0.5,0],[0.5,0],[0.5,0],[0.5,0]]],
-    ["clint eastwood","84",[[1,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0],[0,0,0,0,1,0,1,0,0,0,0,0,1,0,0,0],[1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],[[0.5,0],[0.5,0],[0.5,0],[0.5,0],[0.5,0],[0.5,0]]],
-    ["don't wanna","102",[[1,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0],[0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,1,1],[1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],[[0.5,0],[0.5,0],[0.5,0],[0.5,0],[0.5,0],[0.5,0]]],
-  ];
+  presets = presets;
   part = 0;
   parts = 1;
   flashTimeout = 0;
+  selectMode = false;
 };
 
 class Instrument {
-  constructor(seq, name, steps = makeArray(16, () => 0)) {
+  constructor(seq, id, name, steps = makeArray(16, () => 0)) {
 
     this.seq = seq;
+    this.id = id;
     this.name = name;
     this.steps = steps;
 
@@ -741,16 +786,20 @@ class Steps extends DisplayObject {
   };
   make() {
 
-    let colorIndex = 0;
+    let part = 0;
+    let inst = 0;
+    let color = 0;
 
     return makeArray(this.count).map((index) => {
-      const step = new Step(this.seq, index, this.part, this.stepColors[colorIndex]);
+      const step = new Step(this.seq, index, part, inst, this.stepColors[color]);
+      inst ++;
       if((index + 1) % 4 === 0) {
-        colorIndex += 1;
+        color ++;
       };
       if((index + 1) % 16 === 0) {
-        this.part += 1;
-        colorIndex = 0;
+        part ++;
+        inst = 0;
+        color = 0;
       };
       return step;
     });
@@ -782,6 +831,8 @@ class Steps extends DisplayObject {
 
   };
   applyInstrument() {
+
+    console.log(this.seq.instrument.steps);
 
     this.steps.forEach((step, index) => {
       if(this.seq.instrument.steps[index]) {
@@ -815,15 +866,24 @@ class Steps extends DisplayObject {
 
     this.node.addEventListener('click', (e) => {
       if(e.target?.classList.contains('step')) {
-        this.steps[e.target.dataset.beat].toggle();
+        if(this.seq.selectMode) {
+          const step = this.steps[e.target.dataset.beat];
+          this.seq.setInstrument(step.instrument);
+        }
+        else {
+          this.steps[e.target.dataset.beat].toggle();
+        };
   		};
     });
 
     this.node.addEventListener('touchstart', () => {
+      if(this.seq.selectMode) {return};
       beats = [];
     });
 
     this.node.addEventListener('touchmove', (e) => {
+
+      if(this.seq.selectMode) {return};
 
       const node = document.elementFromPoint(e.touches[0].clientX, e.touches[0].clientY);
 
@@ -841,12 +901,34 @@ class Steps extends DisplayObject {
     return this;
 
   };
+  showInstrumentLabels() {
+
+    this.steps.forEach((step) => {
+      step.toggleInstrumentLabel();
+      if(this.seq.playing) {return};
+      if(step.instrumentId === this.seq.instrument.id) {
+        step.enable(true);
+      }
+      else {
+        step.disable(true);
+      };
+    });
+    return this;
+
+  };
+  hideInstrumentLabels() {
+
+    this.steps.forEach((step) => {
+      step.toggleInstrumentLabel();
+    });
+    return this;
+
+  };
   stepColors = ['red', 'orange', 'yellow', 'white'];
-  part = 0;
 };
 
 class Step extends DisplayObject {
-  constructor(seq, beat, part, color = 'red') {
+  constructor(seq, beat, part, instrument, color = 'red') {
 
     super();
 
@@ -855,15 +937,20 @@ class Step extends DisplayObject {
     this.seq = seq;
     this.beat = beat;
     this.part = part;
+    this.instrument = instrument;
+    this.instrumentId = this.seq.keys[instrument];
+    this.label = this.seq.labels[instrument];
     this.color = color;
     this.visible = this.part===this.seq.part;
 
-    this.node.appendChild(this.indicator);
+    append(this.node)(this.indicator);
 
     this.setProp('enabled', this.enabled);
     this.setProp('active', this.active);
     this.setProp('visible', this.visible);
     this.setProp('beat', this.beat);
+    this.setProp('label', this.label);
+    this.setProp('labelVisible', this.labelVisible);
 
   };
   flash() {
@@ -925,16 +1012,24 @@ class Step extends DisplayObject {
     return this;
 
   };
+  toggleInstrumentLabel() {
+
+    this.labelVisible = !this.labelVisible;
+    this.setProp('labelVisible', this.labelVisible);
+    return this;
+
+  };
   enabled = false;
   active = false;
   visible = false;
+  labelVisible = false;
 };
 
 const interaction = new InteractionFactory(document.body);
 const tempo = new Tempo();
 const tiny = !minWidth(376);
 const gutter = tiny ? 15 : 25;
-const gap = 4;
+const gap = 6;
 const padSize = (((limit(window.innerWidth, 500) - (gutter*2)) - (gap*3)) / 4);
 document.documentElement.style.setProperty('--gap', `${gap}px`);
 document.documentElement.style.setProperty('--pad-size', `${padSize}px`);
