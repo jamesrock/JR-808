@@ -67,7 +67,7 @@ class ToggleFallback extends DisplayObject {
     this.node = makeSelect(items, value);
 
   };
-  getValue() {
+  getValueAsNumber() {
 
     return Number(this.node.value);
 
@@ -312,7 +312,8 @@ class Sequencer extends DisplayObject {
 
     if(tiny) {
       appendTo(this.fallbacksNode)(this.bpmSelect)(this.panningSelect)(this.volumeSelect);
-      append(this.fallbacksNode)(this.patternsFallbackNode);
+      append(this.fallbacksNode)(this.patternsFallbackNode)(this.instButton);
+      append(this.buttonsBottomNode)(this.patternClearButton)(this.tapButton)(this.instrumentClearButton)(this.saveButton)(this.startButton);
     };
 
     addInputListeners([this.bpmSelect], (value) => {

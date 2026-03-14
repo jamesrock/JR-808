@@ -273,7 +273,7 @@ button {
   gap: 10px;
   width: var(--sliders-size);
   justify-content: space-between;
-  padding: 0 10px;
+  padding: 0 10px 25px;
   box-sizing: border-box;
 }
 
@@ -341,11 +341,9 @@ button {
 
 .controllers {
   display: flex;
-  gap: 40px;
   align-items: end;
   flex-direction: column;
   width: 100%;
-  gap: 25px;
 
   button {
     font-family: inherit;
@@ -367,14 +365,25 @@ button {
     transition: color .15s;
 
     &.tap {
-      font-size: 2em;
+
+      @media (min-width: 376px) {
+        font-size: 2em;
+      }
+
     }
 
     &.inst {
-      height: 56px;
       box-sizing: border-box;
       flex-grow: 0;
       font-size: 15px;
+
+      @media (min-width: 376px) {
+        height: 56px;
+      }
+
+      @media (max-width: 375px) {
+        padding: 10px;
+      }
 
       [data-select-mode="true"] & {
         color: var(--yellow);
@@ -402,10 +411,13 @@ button {
   justify-content: space-between;
 }
 
-.controllers-bottom-left {
-  width: 100%;
+.controllers-bottom-left,
+.controllers-bottom-right {
+  width: var(--sliders-size);
+  flex-shrink: 0;
   display: flex;
   flex-direction: column;
+  justify-content: end;
   gap: var(--gap);
 }
 
@@ -471,6 +483,12 @@ button {
     font-weight: inherit;
   }
 
+}
+
+.patterns-target {
+  display: flex;
+  justify-content: end;
+  padding-top: 20px;
 }
 
 .prompt,
