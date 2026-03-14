@@ -232,17 +232,17 @@ class Sequencer extends DisplayObject {
       'snare': '/audio/snare.mp3',
       'hats-closed': '/audio/hats-closed.mp3',
       'hats-open': '/audio/hats-open.mp3',
-      'crash': '/audio/kick.mp3',
-      'sidestick': '/audio/kick.mp3',
-      'tom-lo': '/audio/kick.mp3',
-      'tom-hi': '/audio/kick.mp3',
-      'ride': '/audio/kick.mp3',
+      'crash': '/audio/crash.mp3',
+      'sidestick': '/audio/sidestick.mp3',
+      'tom-lo': '/audio/tom-lo.mp3',
+      'tom-hi': '/audio/tom-hi.mp3',
+      'ride': '/audio/ride.mp3',
       'clap': '/audio/clap.mp3',
-      'conga-lo': '/audio/kick.mp3',
-      'conga-hi': '/audio/kick.mp3',
-      'tambo': '/audio/kick.mp3',
-      'cabasa': '/audio/kick.mp3',
-      'cowbell': '/audio/kick.mp3',
+      'conga-lo': '/audio/conga-lo.mp3',
+      'conga-hi': '/audio/conga-hi.mp3',
+      'tambo': '/audio/tambo.mp3',
+      'cabasa': '/audio/cabasa.mp3',
+      'cowbell': '/audio/cowbell.mp3',
       'clave': '/audio/clave.mp3',
     });
     this.labels = [
@@ -300,7 +300,6 @@ class Sequencer extends DisplayObject {
 
     appendTo(this.slidersNode)(this.volumeSelect)(this.panningSelect)(this.bpmSelect);
     append(this.controllersTopNode)(this.patternsNode)(this.slidersNode);
-    // appendTo(this.controllersBottomLeftNode)(this.instrumentSelect);
     append(this.controllersBottomLeftNode)(this.tapButton)(this.instButton);
     append(this.controllersBottomLeftNode)(this.fallbacksNode);
     append(this.controllersBottomNode)(this.controllersBottomLeftNode)(this.controllersBottomRightNode);
@@ -701,7 +700,8 @@ class Sequencer extends DisplayObject {
   };
   reset() {
 
-    this.instrument = this.instruments[this.instrumentSelect.getValueAsNumber()];
+    const current = this.instrument ? this.keys.indexOf(this.instrument.id) : 0;
+    this.instrument = this.instruments[current];
     this.parts = this.instrument.steps.length/16;
     this.part = 0;
     this.steps.setPart(0);
