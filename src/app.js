@@ -252,7 +252,7 @@ class Sequencer extends DisplayObject {
       'hats op',
       'crash',
       'sidestick',
-      'tom low',
+      'tom lo',
       'tom hi',
       'ride',
       'clap',
