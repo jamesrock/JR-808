@@ -171,12 +171,12 @@ button {
     border-radius: 100%;
     pointer-events: none;
 
-    [data-select-mode="false"] [data-active="true"] &,
+    [data-active="true"] &,
     [data-enabled="true"] & {
       background-color: var(--step-indicator-active);
     }
 
-    [data-select-mode="false"] [data-active="true"][data-enabled="true"] & {
+    [data-active="true"][data-enabled="true"] & {
       background-color: var(--step-indicator-inactive);
     }
 
@@ -370,7 +370,6 @@ button {
 
     &.start,
     &.store,
-    &.inst,
     &.add {
       font-size: 15px;
     }
@@ -384,7 +383,7 @@ button {
     }
 
     &.inst {
-      box-sizing: border-box;
+      font-size: 18px;
       flex-grow: 0;
 
       @media (min-width: 376px) {
