@@ -369,7 +369,9 @@ button {
     transition: color .15s;
 
     &.start,
-    &.store {
+    &.store,
+    &.inst,
+    &.add {
       font-size: 15px;
     }
 
@@ -384,7 +386,6 @@ button {
     &.inst {
       box-sizing: border-box;
       flex-grow: 0;
-      font-size: 16px;
 
       @media (min-width: 376px) {
         height: 56px;
@@ -405,7 +406,6 @@ button {
     }
 
     &.add {
-      font-size: 15px;
       width: 60px;
     }
 
