@@ -258,7 +258,7 @@ class Sequencer extends DisplayObject {
       'clap',
       'conga low',
       'conga high',
-      'tambo',
+      'tambourine',
       'cabasa',
       'cowbell',
       'clave',
