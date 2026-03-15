@@ -342,6 +342,10 @@ class Sequencer extends DisplayObject {
         this.flashPart(1.5);
       }
       else {
+        console.log(this.sounds.context);
+        if(this.sounds.context.state==='suspended') {
+          console.log('bob!');
+        };
         this.start();
       };
 
@@ -403,15 +407,15 @@ class Sequencer extends DisplayObject {
       this.flashPart();
     });
 
-    this.disableSelectMode();
-    this.toggleButtons();
-
-    if(!this.storage.get('patterns')) {
-      this.applyPresets();
-    };
-
     this.sounds.load().then(() => {
+
+      if(!this.storage.get('patterns')) {
+        this.applyPresets();
+      };
+
+      this.toggleButtons();
       this.renderPatternSelect();
+
     });
 
   };
@@ -684,11 +688,10 @@ class Sequencer extends DisplayObject {
   reset() {
 
     const current = this.instrument ? this.keys.indexOf(this.instrument.id) : 0;
-    this.instrument = this.instruments[current];
+    this.setInstrument(current);
     this.parts = this.instrument.steps.length/16;
     this.part = 0;
     this.steps.setPart(0);
-    this.applyInstrument();
     this.toggleButtons();
     return this;
 
@@ -705,6 +708,7 @@ class Sequencer extends DisplayObject {
 
     this.selectMode = false;
     this.setProp('selectMode', this.selectMode);
+    this.applyInstrument();
     return this;
 
   };
@@ -722,12 +726,9 @@ class Sequencer extends DisplayObject {
   };
   setInstrument(inst) {
 
-    setTimeout(() => {
-      this.instrument = this.instruments[inst];
-      this.instButton.innerText = `inst: ${this.instrument.name}`;
-      this.disableSelectMode();
-      this.applyInstrument();
-    }, 1000);
+    this.instrument = this.instruments[inst];
+    this.instButton.innerText = `inst: ${this.instrument.name}`;
+    this.disableSelectMode();
 
     return this;
 
@@ -882,7 +883,9 @@ class Steps extends DisplayObject {
           const step = this.steps[e.target.dataset.beat];
           this.disable();
           step.enable(true);
-          this.seq.setInstrument(step.instrument);
+          setTimeout(() => {
+            this.seq.setInstrument(step.instrument);
+          }, 1000);
         }
         else {
           this.steps[e.target.dataset.beat].toggle();
