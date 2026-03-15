@@ -1064,7 +1064,7 @@ sequencer.appendTo(document.body);
 
 const resizeHandler = () => {
 
-  const gutter = isTiny() ? 15 : 25;
+  const gutter = isLandscape() ? 80 : isTiny() ? 15 : 25;
   const gap = 6;
   const calculatePadSize = (width, count) => (((width - (gutter * 2)) - (gap * (count - 1))) / count);
   const calculateSize = (count) => ((padSize * count) + (gap * (count - 1)));
