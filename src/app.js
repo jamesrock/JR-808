@@ -245,6 +245,24 @@ class Sequencer extends DisplayObject {
       'cowbell': '/audio/cowbell.mp3',
       'clave': '/audio/clave.mp3',
     });
+    this.names = [
+      'kick',
+      'snare',
+      'hats closed',
+      'hats open',
+      'crash',
+      'sidestick',
+      'tom low',
+      'tom high',
+      'ride',
+      'clap',
+      'conga low',
+      'conga high',
+      'tambo',
+      'cabasa',
+      'cowbell',
+      'clave',
+    ];
     this.labels = [
       'kick',
       'snare',
@@ -271,7 +289,7 @@ class Sequencer extends DisplayObject {
     this.startButton = makeButton('start', 'start');
     this.saveButton = makeButton('store', 'store');
     this.tapButton = makeButton('tap', 'tap');
-    this.instButton = makeButton('inst: kick', 'inst');
+    this.instButton = makeButton('kick', 'inst');
     this.patternClearButton = makeButton('clear\nptrn', 'clear');
     this.instrumentClearButton = makeButton('clear\ninst', 'clear');
     this.partPrevButton = makeButton('<', 'dir');
@@ -582,7 +600,7 @@ class Sequencer extends DisplayObject {
     const patternId = this.patternSelect.getValueAsNumber();
     const pattern = saved[patternId];
     this.bpmSelect.setValue(pattern[1]);
-    this.instruments = pattern[2].map((steps, index) => new Instrument(this, this.keys[index], this.labels[index], steps));
+    this.instruments = pattern[2].map((steps, index) => new Instrument(this, this.keys[index], this.names[index], steps));
     this.sounds.mixer = toMixer(this.keys, pattern[3]);
     this.storage.set('pattern', patternId);
     this.reset();
@@ -684,7 +702,7 @@ class Sequencer extends DisplayObject {
   };
   makeInstruments() {
 
-    return this.keys.map((id, index) => new Instrument(this, id, this.labels[index]));
+    return this.keys.map((id, index) => new Instrument(this, id, this.names[index]));
 
   };
   reset() {
@@ -729,7 +747,7 @@ class Sequencer extends DisplayObject {
   setInstrument(inst) {
 
     this.instrument = this.instruments[this.keys.indexOf(inst)];
-    this.instButton.innerText = `inst: ${this.instrument.name}`;
+    this.instButton.innerText = this.instrument.name;
     this.disableSelectMode();
 
     return this;
