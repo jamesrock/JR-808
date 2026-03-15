@@ -268,8 +268,8 @@ class Sequencer extends DisplayObject {
     this.steps = new Steps(this);
     this.storage = new Storage('me.jamesrock.seq');
 
-    this.startButton = makeButton('start');
-    this.saveButton = makeButton('store');
+    this.startButton = makeButton('start', 'start');
+    this.saveButton = makeButton('store', 'store');
     this.tapButton = makeButton('tap', 'tap');
     this.instButton = makeButton('inst: kick', 'inst');
     this.patternClearButton = makeButton('clear\nptrn', 'clear');
@@ -296,6 +296,8 @@ class Sequencer extends DisplayObject {
     this.slidersNode = makeNode('div', 'sliders');
     this.patternsNode = makeNode('div', 'patterns-target');
     this.patternsFallbackNode = makeNode('div', 'patterns-fallback-target');
+
+    this.setProp('loading', true);
 
     appendTo(this.slidersNode)(this.volumeSelect)(this.panningSelect)(this.bpmSelect);
     append(this.controllersTopNode)(this.patternsNode)(this.slidersNode);
@@ -342,10 +344,7 @@ class Sequencer extends DisplayObject {
         this.flashPart(1.5);
       }
       else {
-        console.log(this.sounds.context);
-        if(this.sounds.context.state==='suspended') {
-          console.log('bob!');
-        };
+        console.log(this.sounds.context.state);
         this.start();
       };
 
@@ -415,6 +414,7 @@ class Sequencer extends DisplayObject {
 
       this.toggleButtons();
       this.renderPatternSelect();
+      this.setProp('loading', false);
 
     });
 
@@ -447,7 +447,9 @@ class Sequencer extends DisplayObject {
       return;
     };
 
-    this.steps.flash(this.currentStep);
+    if(!this.selectMode) {
+      this.steps.flash(this.currentStep);
+    };
 
     this.play(this.currentStep);
 
@@ -687,7 +689,7 @@ class Sequencer extends DisplayObject {
   };
   reset() {
 
-    const current = this.instrument ? this.keys.indexOf(this.instrument.id) : 0;
+    const current = this.instrument ? this.instrument.id : 'kick';
     this.setInstrument(current);
     this.parts = this.instrument.steps.length/16;
     this.part = 0;
@@ -726,7 +728,7 @@ class Sequencer extends DisplayObject {
   };
   setInstrument(inst) {
 
-    this.instrument = this.instruments[inst];
+    this.instrument = this.instruments[this.keys.indexOf(inst)];
     this.instButton.innerText = `inst: ${this.instrument.name}`;
     this.disableSelectMode();
 
@@ -881,8 +883,7 @@ class Steps extends DisplayObject {
       if(e.target?.classList.contains('step')) {
         if(this.seq.selectMode) {
           const step = this.steps[e.target.dataset.beat];
-          this.disable();
-          step.enable(true);
+          this.enableNewInstrument(step.instrument);
           setTimeout(() => {
             this.seq.setInstrument(step.instrument);
           }, 1000);
@@ -920,13 +921,22 @@ class Steps extends DisplayObject {
   };
   enableCurrentInstrument() {
 
+    this.clear();
+    this.disable();
     this.steps.forEach((step) => {
-      if(this.seq.playing) {return};
-      if(step.instrumentId === this.seq.instrument.id) {
+      if(step.instrument === this.seq.instrument.id) {
         step.enable(true);
-      }
-      else {
-        step.disable(true);
+      };
+    });
+    return this;
+
+  };
+  enableNewInstrument(id) {
+
+    this.disable();
+    this.steps.forEach((step) => {
+      if(step.instrument === id) {
+        step.enable(true);
       };
     });
     return this;
@@ -936,7 +946,7 @@ class Steps extends DisplayObject {
 };
 
 class Step extends DisplayObject {
-  constructor(seq, beat, part, instrument, color = 'red') {
+  constructor(seq, beat, part, inst, color = 'red') {
 
     super();
 
@@ -945,9 +955,8 @@ class Step extends DisplayObject {
     this.seq = seq;
     this.beat = beat;
     this.part = part;
-    this.instrument = instrument;
-    this.instrumentId = this.seq.keys[instrument];
-    this.label = this.seq.labels[instrument];
+    this.instrument = this.seq.keys[inst];
+    this.label = this.seq.labels[inst];
     this.color = color;
     this.visible = this.part===this.seq.part;
 

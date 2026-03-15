@@ -92,6 +92,10 @@ button {
   flex-direction: column;
   align-items: start;
   gap: 25px;
+  transition: opacity .25s;
+  &[data-loading="true"] {
+    opacity: 0;
+  }
 }
 
 .steps {
@@ -167,12 +171,12 @@ button {
     border-radius: 100%;
     pointer-events: none;
 
-    [data-active="true"] &,
+    [data-select-mode="false"] [data-active="true"] &,
     [data-enabled="true"] & {
       background-color: var(--step-indicator-active);
     }
 
-    [data-active="true"][data-enabled="true"] & {
+    [data-select-mode="false"] [data-active="true"][data-enabled="true"] & {
       background-color: var(--step-indicator-inactive);
     }
 
@@ -364,10 +368,15 @@ button {
     background-image: radial-gradient(rgba(0,0,0,0.15), rgba(0,0,0,0.15));
     transition: color .15s;
 
+    &.start,
+    &.store {
+      font-size: 15px;
+    }
+
     &.tap {
 
       @media (min-width: 376px) {
-        font-size: 2em;
+        font-size: 24px;
       }
 
     }
@@ -375,7 +384,7 @@ button {
     &.inst {
       box-sizing: border-box;
       flex-grow: 0;
-      font-size: 15px;
+      font-size: 16px;
 
       @media (min-width: 376px) {
         height: 56px;
@@ -399,6 +408,7 @@ button {
       font-size: 15px;
       width: 60px;
     }
+
   }
 
 }
