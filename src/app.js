@@ -19,6 +19,7 @@ import {
   minWidth,
   append,
   appendTo,
+  isLandscape,
 } from '@jamesrock/rockjs';
 import { presets } from './presets';
 
@@ -47,6 +48,8 @@ const addInputListeners = (nodes, listener) => {
   return nodes;
 
 };
+
+const isTiny = () => !minWidth(376);
 
 class Toggle extends ToggleBase {
   constructor(items, name = '{name}', initialValue, className, title = '{title}') {
@@ -296,7 +299,7 @@ class Sequencer extends DisplayObject {
     this.partAddButton = makeButton('+16', 'add');
     this.partNextButton = makeButton('>', 'dir');
 
-    const sliderDirection = tiny ? 'horizontal' : 'vertical';
+    const sliderDirection = isTiny() ? 'horizontal' : 'vertical';
 
     this.bpmSelect = new Slider('BPM', 120, 60, 180, 2, (a) => a, sliderDirection);
     this.panningSelect = new Slider('PAN', 0, -1, 1, 0.1, (value) => getXAsPercentOfY(value, 1), sliderDirection);
@@ -330,7 +333,7 @@ class Sequencer extends DisplayObject {
     append(this.node)(this.controllersNode);
     appendTo(this.node)(this.steps);
 
-    if(tiny) {
+    if(sliderDirection === 'horizontal') {
       appendTo(this.fallbacksNode)(this.bpmSelect)(this.panningSelect)(this.volumeSelect);
       append(this.fallbacksNode)(this.patternsFallbackNode)(this.instButton);
       append(this.buttonsBottomNode)(this.patternClearButton)(this.tapButton)(this.instrumentClearButton)(this.saveButton)(this.startButton);
@@ -573,7 +576,7 @@ class Sequencer extends DisplayObject {
     const items = saved.map(([name, bpm], index) => [`${limitChars(name)} ${bpm}`, index]);
     const defaultValue = this.storage.get('pattern');
 
-    if(tiny) {
+    if(isTiny()) {
       this.patternSelect = new ToggleFallback(items, defaultValue);
       this.patternSelect.appendTo(this.patternsFallbackNode);
     }
@@ -1053,17 +1056,37 @@ class Step extends DisplayObject {
 
 const interaction = new InteractionFactory(document.body);
 const tempo = new Tempo();
-const tiny = !minWidth(376);
-const gutter = tiny ? 15 : 25;
-const gap = 6;
-const padSize = (((limit(window.innerWidth, 500) - (gutter*2)) - (gap*3)) / 4);
-document.documentElement.style.setProperty('--gap', `${gap}px`);
-document.documentElement.style.setProperty('--pad-size', `${padSize}px`);
-document.documentElement.style.setProperty('--sliders-size', `${(padSize*2) + gap}px`);
-document.documentElement.style.setProperty('--gutter', `${gutter}px`);
-
 const sequencer = new Sequencer();
 
 console.log(sequencer);
 
 sequencer.appendTo(document.body);
+
+const resizeHandler = () => {
+
+  const gutter = isTiny() ? 15 : 25;
+  const gap = 6;
+  const calculatePadSize = (width, count) => (((width - (gutter * 2)) - (gap * (count - 1))) / count);
+  const calculateSize = (count) => ((padSize * count) + (gap * (count - 1)));
+  let padSize = calculatePadSize(limit(window.innerWidth, 500), 4);
+  let half = 2;
+  let buttonBase = 1;
+  let padHeight = padSize;
+  if(isLandscape()) {
+    padSize = calculatePadSize(window.innerWidth, 16);
+    padHeight = (padSize * 1.9);
+    half = 4;
+    buttonBase = 2;
+  };
+  document.documentElement.style.setProperty('--gap', `${gap}px`);
+  document.documentElement.style.setProperty('--pad-size', `${padSize}px`);
+  document.documentElement.style.setProperty('--pad-height', `${padHeight}px`);
+  document.documentElement.style.setProperty('--gutter', `${gutter}px`);
+  document.documentElement.style.setProperty('--sliders-size', `${calculateSize(half)}px`);
+  document.documentElement.style.setProperty('--button-size', `${calculateSize(buttonBase)}px`);
+
+};
+
+resizeHandler();
+
+window.addEventListener('resize', resizeHandler);
